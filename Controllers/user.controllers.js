@@ -115,5 +115,27 @@ module.exports.signIn = (req, res) => {
     .catch((err) => {
         console.log("error occured", err);
         return res.status(200).json({ message: "Error Occured", status: false })
-    })
+    })  
 };
+
+
+module.exports.dashBoard = (req, res) =>{
+    let token = req.headers.authorization.split(" ")[1]
+    console.log(token);
+    jwt.verify(token, secret, ((err, result) => {
+        if (err) {
+            res.send({ status: false, message: "wrong token" })
+            console.log(err);
+        }
+        else {
+            Userschema.findOne({ _id: result.id }).then((user) => {
+                res.send({ status: true, message: "Success token correct", user })
+                console.log(user);
+
+            })
+            .catch((err) => {
+                console.log("error Occured", err);
+            })
+        }
+    }))
+}
