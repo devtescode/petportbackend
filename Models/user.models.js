@@ -7,24 +7,47 @@ let schema = mongoose.Schema({
     Number: { type: Number, required: true },
     Email: { type: String, unique: true, required: true },
     Password: { type: String, required: true }, 
+    Product: {type: [], default:[] },
+    Balance: {type: Number, default:0}
 })
 
 
 
 
-let saltRound = 10
-schema.pre("save", function (next) {
-    bcrypt.hash(this.Password, saltRound, (err, hash) => {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            console.log(hash);
-            this.Password = hash;
-            next()
-        }
-    })
-})
+// let saltRound = 10
+// schema.pre("save", function (next) {
+//     bcrypt.hash(this.Password, saltRound, (err, hash) => {
+//         if (err) {
+//             console.log(err);
+//         }
+//         else {
+//             console.log(hash);
+//             this.Password = hash;
+//             next()
+//         }
+//     })
+// })
+
+const saltRounds = 10;
+schema.pre("save", async function (next) {
+  if (this.isModified("Password")) {
+    try {
+      const hashedPassword = await bcrypt.hash(this.Password, saltRounds);
+      this.Password = hashedPassword;
+      next();
+    } catch (err) {
+      console.error("Error hashing password:", err);
+      next(err); 
+    }
+  } else {
+    next();
+  }
+});
+
+
+
+
+
 schema.methods.compareUser = async function (userPass) {
     try {
         const user = await bcrypt.compare(userPass, this.Password)
