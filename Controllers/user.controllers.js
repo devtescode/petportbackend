@@ -215,3 +215,39 @@ module.exports.investnow = async (req, res) => {
         res.status(500).send('Internal server error');
     }
 }
+
+
+module.exports.changepassword = async (req, res) => {
+
+    jwt.verify(req.body.token, secret, async (err, result) => {
+        if (err) {
+            res.send({ status: false, message: "wrong token" });
+            console.log(err);
+        } else {
+            try {
+                const user = await Userschema.findOne({ _id: result.id });
+                if (!user) {
+                    return res.status(200).json({ message: "Username Not Found", status: false });
+                } else {
+                    const correctpassword = await user.compareUser(req.body.OldPassword);
+                    if (!correctpassword) {
+                        console.log("incorrect password");
+                        return res.status(200).json({ message: "Incorrect Password", status: false });
+                    } else if (req.body.OldPassword === req.body.NewPassword) {
+                        console.log("old password and new password are the same");
+                        return res.status(200).json({ message: "New password cannot be the same as the old password", status: false });
+                    } else {
+                        user.Password = req.body.NewPassword;
+                        await user.save();
+                        console.log("password changed successfully");
+                        return res.status(200).json({ message: "Password changed successfully", status: true });
+                    }
+                }
+            } catch (err) {
+                res.send({ message: 'Error Occurred' });
+                console.log(err, "Error Occurred");
+            }
+        }
+    });
+    
+}
