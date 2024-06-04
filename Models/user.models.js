@@ -10,6 +10,7 @@ let schema = mongoose.Schema({
     Product: {type: [], default:[] },
     Balance: {type: Number, default:0},
     Uploadimg: { type: String, required: false },
+
 })
 
 
