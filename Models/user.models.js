@@ -8,7 +8,8 @@ let schema = mongoose.Schema({
     Email: { type: String, unique: true, required: true },
     Password: { type: String, required: true }, 
     Product: {type: [], default:[] },
-    Balance: {type: Number, default:0}
+    Balance: {type: Number, default:0},
+    Uploadimg: { type: String, required: false },
 })
 
 

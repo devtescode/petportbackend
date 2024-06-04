@@ -1,5 +1,5 @@
 const express = require('express');
-const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword} = require('../Controllers/user.controllers');
+const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile} = require('../Controllers/user.controllers');
 const router = express.Router()
 
 
@@ -11,4 +11,5 @@ router.get("/product", product)
 router.get("/productid/:id", productid)
 router.post("/investnow", investnow)
 router.post("/changepassword", changepassword)
+router.post("/profile", profile)
 module.exports = router

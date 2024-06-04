@@ -18,6 +18,13 @@ var transporter = nodemailer.createTransport({
     }
 });
 
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRETCLOUD
+});
+
+
 module.exports.userWelcome = (req, res) => {
     res.send('welcome here my user')
 
@@ -218,7 +225,6 @@ module.exports.investnow = async (req, res) => {
 
 
 module.exports.changepassword = async (req, res) => {
-
     jwt.verify(req.body.token, secret, async (err, result) => {
         if (err) {
             res.send({ status: false, message: "wrong token" });
@@ -248,6 +254,42 @@ module.exports.changepassword = async (req, res) => {
                 console.log(err, "Error Occurred");
             }
         }
-    });
-    
+    });   
+}
+
+
+module.exports.profile = async (req, res) => {
+    console.log(req.body)
+    jwt.verify(req.body.token, secret, (err, result) => {
+        if (err) {
+            console.log("error" + err.message);
+            res.send({ message: 'Upload Fail' });
+        } else {
+            const myfile = req.body.file;
+
+            cloudinary.v2.uploader.upload(myfile, (err, cloudinaryResult) => {
+                if (err) {
+                    console.log("error" + err.message);
+                    res.send({ message: 'Upload failed. Please check and try again.' });
+                } else {
+                    Userschema.findOneAndUpdate(
+                        { _id: result.id },
+                        { Uploadimg: cloudinaryResult.secure_url }
+                    )
+                        .then((user) => {
+                            res.send({
+                                status: true,
+                                message: "Upload Success",
+                                image: cloudinaryResult.secure_url
+                            });
+
+                        })
+                        .catch((err) => {
+                            console.log("Error updating user document", err);
+                            res.send({ message: 'Error Occured' });
+                        });
+                }
+            })
+        }
+    })
 }
