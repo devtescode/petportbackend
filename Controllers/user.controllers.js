@@ -227,6 +227,7 @@ module.exports.investnow = async (req, res) => {
             if (finduser.Balance >= productPrice) {
                 finduser.Product.push(getProduct);
                 finduser.Balance -= productPrice;
+                finduser.Totalinvest += 1;
                 await finduser.save();
 
                 const userData = {
@@ -234,7 +235,8 @@ module.exports.investnow = async (req, res) => {
                     number: finduser.Number,
                     email: finduser.Email,
                     products: finduser.Product,
-                    balance: finduser.Balance   
+                    balance: finduser.Balance,
+                    totalInvest: finduser.Totalinvest
                 };
 
                 console.log("Product saved successfully");
