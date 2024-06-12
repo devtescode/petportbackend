@@ -10,7 +10,8 @@ let schema = mongoose.Schema({
     Product: {type: [], default:[] },
     Balance: {type: Number, default:0},
     Uploadimg: { type: String, required: false },
-    Totalinvest: {type: Number, default:0}
+    Totalinvest: {type: Number, default:0},
+    Amountinvest: {type: Number, default:0},
 })
 
 

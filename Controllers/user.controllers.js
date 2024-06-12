@@ -157,18 +157,24 @@ module.exports.dashBoard = (req, res) => {
 
 
 const products = [
-    { id: 1, name: 'Dog Picture', description: 'A lovely picture of a dog', price: "40,000", image: 'https://imgs.search.brave.com/EyF2d37ECqQjj_VKRgXk4co-xc_B0MI-Sz5LZWweezo/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9idXJz/dC5zaG9waWZ5Y2Ru/LmNvbS9waG90b3Mv/c2FkLWRvZy5qcGc_/d2lkdGg9MTAwMCZm/b3JtYXQ9cGpwZyZl/eGlmPTAmaXB0Yz0w' },
-    { id: 2, name: 'Dog Picture', description: 'A cute picture of a cat', price: "50,000", image: 'https://imgs.search.brave.com/6F1Iwg06KgMESprZsZgI6ax7GAIs77ubAO1Cgj9kfL4/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzA2LzEwLzcxLzY0/LzM2MF9GXzYxMDcx/NjQ5M195Zm1SaUdI/MTZZdFQ2emZPbFNk/WnJnb25iS24xbER0/UC5qcGc' },
-    { id: 3, name: 'Dog Picture', description: 'A cute picture of a cat', price: "60,000", image: 'https://imgs.search.brave.com/lI9yF1H8NNJ2eKvRaLHJISmPFhFqGlsf75ksfWU7Fug/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvNjk3/OTQ2NDMwL3Bob3Rv/L3BpdGJ1bGwtZG9n/LXBvcnRyYWl0LXdp/dGgtaHVtYW4tZXhw/cmVzc2lvbi5qcGc_/cz02MTJ4NjEyJnc9/MCZrPTIwJmM9dVdU/OXZCb0NaUFB5Zzl4/a0owY1FJLUhxV2Q1/c2xmN19Rc2Rpd1l2/YXpTWT0' },
-    { id: 4, name: 'Dog Picture', description: 'A cute picture of a cat', price: "40,000", image: 'https://imgs.search.brave.com/1-p2jC4M0PEF8IqbhheAEjtAlE87PbTR8JFxD4rE-DA/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9idXJz/dC5zaG9waWZ5Y2Ru/LmNvbS9waG90b3Mv/c3VwZXItcHVwcHku/anBnP3dpZHRoPTEw/MDAmZm9ybWF0PXBq/cGcmZXhpZj0wJmlw/dGM9MA' },
-    { id: 5, name: 'Dog Picture', description: 'A cute picture of a cat', price: "35,000", image: 'https://imgs.search.brave.com/ueOFIIcmTZSkV4OLHCFnKEgDNIp30AvP41lcV3bvRLw/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzA2Lzk1LzQwLzQw/LzM2MF9GXzY5NTQw/NDA3Ml9oazFYTGFG/NG12dGdnWTY2ek9N/RzRnMFM3cmRVMFpS/by5qcGc' },
-    { id: 6, name: 'Pig Picture', description: 'A cute picture of a cat', price: "70,000", image: 'https://imgs.search.brave.com/3Yw7eiejZQpE_mgQrPMZb2FSH1OfiNN3eEgKnjpeIOo/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTU2/MzY1NDQwL3Bob3Rv/L3BpZy1vbi13aGl0/ZS5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9Y3FXdzZ5d3Z0/X3ZsVlpOWmQtOGdW/NmVaZ21CR3M1N0NR/SnBwT1JTTUhnbz0' },
-    { id: 7, name: 'Pig Picture', description: 'A cute picture of a cat', price: "80,000", image: 'https://imgs.search.brave.com/ziKARirV5F1EnhjDU6638VavAGgXWzUrQe62-QH42Fc/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzAwLzAyLzc0Lzc0/LzM2MF9GXzI3NDc0/ODdfUU1XWGhEVm9U/bGVueFVkSWJsUWlX/QlRIWk5nTDhlLmpw/Zw' },
-    { id: 8, name: 'Pig Picture', description: 'A cute picture of a cat', price: "90,000", image: 'https://imgs.search.brave.com/nnCzVw4LuYz2o3uO-2-KsgpqRQ2RU4fSuTaWUxQXas4/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAwLzg5LzkxLzI3/LzM2MF9GXzg5OTEy/NzM4X2laNW84NUZN/QU1PSDhoTUd1ZWtn/ZjNvRWZ1VUFNbWN2/LmpwZw' },
-    { id: 9, name: 'Pig Picture', description: 'A cute picture of a cat', price: "95,000", image: 'https://imgs.search.brave.com/SIfT35RBOh1_TWrqgWKBD_qM53GxSTBKtHbTyHo2qmQ/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAwLzMwLzczLzcx/LzM2MF9GXzMwNzM3/MTE4X0g5Sk82dUZD/WjlkaExHQ0Y5Mm1o/cWQwd3hYQ0lqZzNx/LmpwZw' },
-    { id: 10, name: 'Pig Picture', description: 'A cute picture of a cat', price: "75,000", image: 'https://imgs.search.brave.com/_W5HgyOcYog77trl4flkvvEHyudd9pwv4dEjCyc4wGA/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAwLzczLzIwLzYz/LzM2MF9GXzczMjA2/MzU2XzY2aFVXd1Jj/MXZzZmlsazFtSDJI/cnFid1UweGliTVpY/LmpwZw' },
-    { id: 11, name: 'Pig Picture', description: 'A cute picture of a cat', price: "80,000", image: 'https://imgs.search.brave.com/88XTazFskkh84F4WJVOquGfGZ6pp_-mGrsDM3Hgs-rk/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzAyLzY1Lzg5LzU2/LzM2MF9GXzI2NTg5/NTYyNl93cnAxdjFR/eEFlSWFVUTFrTncz/a3J1MWllN0oySjBn/NS5qcGc' },
-    { id: 12, name: 'Pig Picture', description: 'A cute picture of a cat', price: "95,000", image: 'https://imgs.search.brave.com/oz24HLd6GWPiEKZqcCpMQltJyuiXXiS8Tgr8nscCZO0/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvODYx/NTM1NDY4L3Bob3Rv/L3BpZy1vbi13aGl0/ZS5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9QkFReDB0SDJs/ZmVlM200WjBzaFda/NUk5aEN2VVgxVUVM/UlFyV2FZMmNGbz0' },
+    { id: 1, name: 'Dog Picture', description: 'A lovely picture of a Dog', price: "40,000", image: 'https://images.pexels.com/photos/1458916/pexels-photo-1458916.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 2, name: 'Dog Picture', description: 'A cute picture of a Dog', price: "50,000", image: 'https://images.pexels.com/photos/3361722/pexels-photo-3361722.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 3, name: 'Dog Picture', description: 'A cute picture of a Dog', price: "60,000", image: 'https://images.pexels.com/photos/1420405/pexels-photo-1420405.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 4, name: 'Dog Picture', description: 'A cute picture of a Dog', price: "40,000", image: 'https://images.pexels.com/photos/1390784/pexels-photo-1390784.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 5, name: 'Dog Picture', description: 'A cute picture of a Dog', price: "35,000", image: 'https://images.pexels.com/photos/245035/pexels-photo-245035.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 6, name: 'Pig Picture', description: 'A cute picture of a Pig', price: "70,000", image: 'https://imgs.search.brave.com/3Yw7eiejZQpE_mgQrPMZb2FSH1OfiNN3eEgKnjpeIOo/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTU2/MzY1NDQwL3Bob3Rv/L3BpZy1vbi13aGl0/ZS5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9Y3FXdzZ5d3Z0/X3ZsVlpOWmQtOGdW/NmVaZ21CR3M1N0NR/SnBwT1JTTUhnbz0' },
+    { id: 7, name: 'Pig Picture', description: 'A cute picture of a Pig', price: "80,000", image: 'https://imgs.search.brave.com/ziKARirV5F1EnhjDU6638VavAGgXWzUrQe62-QH42Fc/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzAwLzAyLzc0Lzc0/LzM2MF9GXzI3NDc0/ODdfUU1XWGhEVm9U/bGVueFVkSWJsUWlX/QlRIWk5nTDhlLmpw/Zw' },
+    { id: 8, name: 'Pig Picture', description: 'A cute picture of a Pig', price: "90,000", image: 'https://imgs.search.brave.com/nnCzVw4LuYz2o3uO-2-KsgpqRQ2RU4fSuTaWUxQXas4/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAwLzg5LzkxLzI3/LzM2MF9GXzg5OTEy/NzM4X2laNW84NUZN/QU1PSDhoTUd1ZWtn/ZjNvRWZ1VUFNbWN2/LmpwZw' },
+    { id: 9, name: 'Pig Picture', description: 'A cute picture of a Pig', price: "95,000", image: 'https://imgs.search.brave.com/SIfT35RBOh1_TWrqgWKBD_qM53GxSTBKtHbTyHo2qmQ/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAwLzMwLzczLzcx/LzM2MF9GXzMwNzM3/MTE4X0g5Sk82dUZD/WjlkaExHQ0Y5Mm1o/cWQwd3hYQ0lqZzNx/LmpwZw' },
+    { id: 10, name: 'Pig Picture', description: 'A cute picture of a Pig', price: "75,000", image: 'https://imgs.search.brave.com/_W5HgyOcYog77trl4flkvvEHyudd9pwv4dEjCyc4wGA/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAwLzczLzIwLzYz/LzM2MF9GXzczMjA2/MzU2XzY2aFVXd1Jj/MXZzZmlsazFtSDJI/cnFid1UweGliTVpY/LmpwZw' },
+    { id: 11, name: 'Pig Picture', description: 'A cute picture of a Pig', price: "80,000", image: 'https://imgs.search.brave.com/88XTazFskkh84F4WJVOquGfGZ6pp_-mGrsDM3Hgs-rk/rs:fit:500:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzAyLzY1Lzg5LzU2/LzM2MF9GXzI2NTg5/NTYyNl93cnAxdjFR/eEFlSWFVUTFrTncz/a3J1MWllN0oySjBn/NS5qcGc' },
+    { id: 12, name: 'Pig Picture', description: 'A cute picture of a Pig', price: "95,000", image: 'https://imgs.search.brave.com/oz24HLd6GWPiEKZqcCpMQltJyuiXXiS8Tgr8nscCZO0/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvODYx/NTM1NDY4L3Bob3Rv/L3BpZy1vbi13aGl0/ZS5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9QkFReDB0SDJs/ZmVlM200WjBzaFda/NUk5aEN2VVgxVUVM/UlFyV2FZMmNGbz0' },
+    { id: 13, name: 'Dog Picture', description: 'A cute picture of a Dog', price: "120,000", image: 'https://images.pexels.com/photos/1458908/pexels-photo-1458908.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 14, name: 'Dog Picture', description: 'A cute picture of a Dog', price: "100,000", image: 'https://images.pexels.com/photos/69433/pexels-photo-69433.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 15, name: 'Dog Picture', description: 'A cute picture of a Dog', price: "130,000", image: 'https://images.pexels.com/photos/4587979/pexels-photo-4587979.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 16, name: 'Pig Picture', description: 'A cute picture of a Pig', price: "180,000", image: 'https://images.pexels.com/photos/10012853/pexels-photo-10012853.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 17, name: 'Pig Picture', description: 'A cute picture of a Pig', price: "200,000", image: 'https://images.pexels.com/photos/7013008/pexels-photo-7013008.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 18, name: 'Pig Picture', description: 'A cute picture of a Pig', price: "230,000", image: 'https://images.pexels.com/photos/7854936/pexels-photo-7854936.jpeg?auto=compress&cs=tinysrgb&w=600' },
 
 ];
 module.exports.product = (req, res) => {
@@ -228,6 +234,7 @@ module.exports.investnow = async (req, res) => {
                 finduser.Product.push(getProduct);
                 finduser.Balance -= productPrice;
                 finduser.Totalinvest += 1;
+                finduser.Amountinvest += productPrice;
                 await finduser.save();
 
                 const userData = {
@@ -236,7 +243,8 @@ module.exports.investnow = async (req, res) => {
                     email: finduser.Email,
                     products: finduser.Product,
                     balance: finduser.Balance,
-                    totalInvest: finduser.Totalinvest
+                    totalInvest: finduser.Totalinvest,
+                    amountInvest: finduser.Amountinvest
                 };
 
                 console.log("Product saved successfully");
