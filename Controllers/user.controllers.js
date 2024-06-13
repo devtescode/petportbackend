@@ -335,3 +335,69 @@ module.exports.profile = async (req, res) => {
     })
 }
 
+
+module.exports.emailpage = (req, res) => {
+    const userEmail = req.body.Emailpage;
+    // let setmycode = req.body.randomToken
+    // console.log(setmycode);
+    Userschema.findOne({ Email: userEmail }).then(async (user) => {
+        if (user) {
+            var mailOptions = {
+                from: process.env.USER_EMAIL,
+                to: req.body.Emailpage,
+                subject: 'ProPulses',
+                html: `
+                      <!DOCTYPE html>
+                      <html lang="en">
+                      <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Email</title>
+                      </head>
+                      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+                      
+                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="width: 100%; max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                          <tr>
+                            <td align="center">
+                              <h1 style="color: #333333;">ProPulses</h1>
+                            </td>
+                          </tr> 
+                          <tr>
+                            <td>
+                              <p style="color: #555555;">Hello Gud day,</p>
+                              <p style="color: #555555;">Your Forget Password is ${req.body.randomToken}</p>
+                            </td>
+                          </tr>
+                        </table>
+                      </body>
+                      </html>
+                    `
+            };
+            await transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error.message);
+                } else {
+                    console.log('Email sent: ' + info.response);
+                }
+            });
+            // console.log(user)
+            usermodal.updateOne({ _id: user.id }, { $set: { Codetoken: req.body.randomToken } })
+                .then((user) => {
+                    res.send({ status: true, message: "Successfully sent" })
+                    console.log("sent");
+                })
+                .catch((err) => {
+                    console.log(err, "Error Occured");
+                })
+
+            // res.send({ status: true, message: "Success, user found", user, setmycode });
+            // console.log(user);
+        }
+        else {
+            res.send({ status: false, message: "User not found" });
+        }
+    }).catch((error) => {
+        console.error("Error finding user:", error);
+        res.status(500).send({ status: false, message: "Internal server error" });
+    });
+}
