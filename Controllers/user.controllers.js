@@ -359,7 +359,7 @@ module.exports.emailpage = (req, res) => {
                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="width: 100%; max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                           <tr>
                             <td align="center">
-                              <h1 style="color: #333333;">ProPulses</h1>
+                              <h1 style="color: #333333;">PETPORT</h1>
                             </td>
                           </tr> 
                           <tr>
@@ -381,7 +381,7 @@ module.exports.emailpage = (req, res) => {
                 }
             });
             // console.log(user)
-            usermodal.updateOne({ _id: user.id }, { $set: { Codetoken: req.body.randomToken } })
+            Userschema.updateOne({ _id: user.id }, { $set: { Codetoken: req.body.randomToken } })
                 .then((user) => {
                     res.send({ status: true, message: "Successfully sent" })
                     console.log("sent");
