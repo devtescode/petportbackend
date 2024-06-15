@@ -401,3 +401,27 @@ module.exports.emailpage = (req, res) => {
         res.status(500).send({ status: false, message: "Internal server error" });
     });
 }
+
+module.exports.forgetpassword = async (req, res) => {
+    // Codetoken = req.body.Forgetmailone
+    // if (req.body.Forgetmailtwo !== req.body.Forgetmailthree) {
+    //     res.send({ message: "Check the password and try again", status: false });
+    //     return;
+    // }
+    // usermodal.findOne({ Codetoken }).then((user) => {
+    //     if (!user) {
+    //         res.send({ message: "invaild token", status: false })
+    //     }
+    //     else {
+    //         user.Password = req.body.Forgetmailtwo
+    //         user.save().then((user) => {
+    //             res.send({ message: "Success", status: true })
+
+    //         })
+    //     }
+    // })
+    //     .catch((err) => {
+    //         console.log(err, "Error Occuer");
+    //         res.send({ message: "Something went wrong", status: false })
+    //     })
+}
