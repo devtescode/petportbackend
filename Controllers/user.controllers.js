@@ -120,7 +120,7 @@ module.exports.signIn = (req, res) => {
                     email: user.Email,
                     products: user.Product,
                     balance: user.Balance
-                    
+
                 }
                 console.log("user success", userData)
                 return res.status(200).json({ message: "Login Success", status: true, token, userData })
@@ -206,7 +206,7 @@ module.exports.productid = (req, res) => {
 //             }
 //             console.log("Product saved Successfully");
 //             res.send({message: "Successfully saved", userData})
-            
+
 //         }
 //         else{
 //             console.log("Not found");
@@ -221,14 +221,14 @@ module.exports.productid = (req, res) => {
 
 module.exports.investnow = async (req, res) => {
     const { productId, Email } = req.body;
-    try {   
+    try {
         const finduser = await Userschema.findOne({ Email });
         if (finduser) {
             const getProduct = products.find((product) => product.id == productId);
             if (!getProduct) {
                 return res.status(404).send('Product not found');
             }
-            
+
             const productPrice = parseInt(getProduct.price.replace(/,/g, ''), 10);
             if (finduser.Balance >= productPrice) {
                 finduser.Product.push(getProduct);
@@ -261,7 +261,7 @@ module.exports.investnow = async (req, res) => {
     } catch (error) {
         console.error("Error saving product", error);
         res.status(500).send('Internal server error');
-        
+
     }
 };
 
@@ -295,7 +295,7 @@ module.exports.changepassword = async (req, res) => {
                 console.log(err, "Error Occurred");
             }
         }
-    });   
+    });
 }
 
 
@@ -336,92 +336,170 @@ module.exports.profile = async (req, res) => {
 }
 
 
+// module.exports.emailpage = (req, res) => {
+//     const userEmail = req.body.Emailpage;
+//     Userschema.findOne({ Email: userEmail }).then(async (user) => {
+//         if (user) {
+//             var mailOptions = {
+//                 from: process.env.USER_EMAIL,
+//                 to: req.body.Emailpage,
+//                 subject: 'ProPulses',
+//                 html: `
+//                       <!DOCTYPE html>
+//                       <html lang="en">
+//                       <head>
+//                         <meta charset="UTF-8">
+//                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+//                         <title>Email</title>
+//                       </head>
+//                       <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+
+//                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="width: 100%; max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+//                           <tr>
+//                             <td align="center">
+//                               <h1 style="color: #333333;">PETPORT</h1>
+//                             </td>
+//                           </tr> 
+//                           <tr>
+//                             <td>
+//                               <p style="color: #555555;">Hello Gud day,</p>
+//                               <p style="color: #555555;">Your Forget Password is ${req.body.randomToken}</p>
+//                             </td>
+//                           </tr>
+//                         </table>
+//                       </body>
+//                       </html>
+//                     `
+//             };
+//             await transporter.sendMail(mailOptions, function (error, info) {
+//                 if (error) {
+//                     console.log(error.message);
+//                 } else {
+//                     console.log('Email sent: ' + info.response);
+//                 }
+//             });
+//             // console.log(user)
+//             Userschema.updateOne({ _id: user.id }, { $set: { Codetoken: req.body.randomToken } })
+//                 .then((user) => {
+//                     res.send({ status: true, message: "Successfully sent" })
+//                     console.log("The Reset passsword is ", req.body.randomToken);
+//                 })
+//                 .catch((err) => {
+//                     console.log(err, "Error Occured");
+//                 })
+
+//             // res.send({ status: true, message: "Success, user found", user, setmycode });
+//             // console.log(user);
+//         }
+//         else {
+//             res.send({ status: false, message: "User not found" });
+//         }
+//     }).catch((error) => {
+//         console.error("Error finding user:", error);
+//         res.status(500).send({ status: false, message: "Internal server error" });
+//     });
+// }
+
+
+
 module.exports.emailpage = (req, res) => {
     const userEmail = req.body.Emailpage;
-    // let setmycode = req.body.randomToken
-    // console.log(setmycode);
     Userschema.findOne({ Email: userEmail }).then(async (user) => {
-        if (user) {
-            var mailOptions = {
-                from: process.env.USER_EMAIL,
-                to: req.body.Emailpage,
-                subject: 'ProPulses',
-                html: `
-                      <!DOCTYPE html>
-                      <html lang="en">
-                      <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Email</title>
-                      </head>
-                      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
-                      
-                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="width: 100%; max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                          <tr>
-                            <td align="center">
-                              <h1 style="color: #333333;">PETPORT</h1>
-                            </td>
-                          </tr> 
-                          <tr>
-                            <td>
-                              <p style="color: #555555;">Hello Gud day,</p>
-                              <p style="color: #555555;">Your Forget Password is ${req.body.randomToken}</p>
-                            </td>
-                          </tr>
-                        </table>
-                      </body>
-                      </html>
-                    `
-            };
-            await transporter.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    console.log(error.message);
-                } else {
-                    console.log('Email sent: ' + info.response);
-                }
-            });
-            // console.log(user)
-            Userschema.updateOne({ _id: user.id }, { $set: { Codetoken: req.body.randomToken } })
-                .then((user) => {
-                    res.send({ status: true, message: "Successfully sent" })
-                    console.log("sent");
-                })
-                .catch((err) => {
-                    console.log(err, "Error Occured");
-                })
-
-            // res.send({ status: true, message: "Success, user found", user, setmycode });
-            // console.log(user);
+        if (!user) {
+            return res.send({ status: false, message: "User not found" });
         }
-        else {
-            res.send({ status: false, message: "User not found" });
+        const now = new Date();
+        const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+        if (user.tokenGenerationAttempts >= 5) {
+            if (now - new Date(user.firstAttemptTimestamp) < tenMinutes) {
+                return res.send({ status: false, message: "You have reached the maximum number of attempts. Please wait 10 minutes before trying again." });
+            } else {
+                user.tokenGenerationAttempts = 0;
+                user.firstAttemptTimestamp = null;
+            }
+        }
+
+        const randomToken = generateRandomToken();
+
+        var mailOptions = {
+            from: process.env.USER_EMAIL,
+            to: req.body.Emailpage,
+            subject: 'ProPulses',
+            html: `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Email</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="width: 100%; max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <tr>
+                            <td align="center">
+                                <h1 style="color: #333333;">PETPORT</h1>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p style="color: #555555;">Hello Gud day,</p>
+                                <p style="color: #555555;">Your Forget Password is ${randomToken}</p>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+            `
+        };
+
+        try {
+            await transporter.sendMail(mailOptions);
+
+            user.Codetoken = randomToken;
+            user.tokenGenerationAttempts += 1;
+            if (user.tokenGenerationAttempts === 1) {
+                user.firstAttemptTimestamp = now;
+            }
+            await user.save();
+
+            res.send({ status: true, message: "Successfully sent" });
+        } catch (error) {
+            console.error("Error sending email:", error);
+            res.status(500).send({ status: false, message: "Internal server error" });
         }
     }).catch((error) => {
         console.error("Error finding user:", error);
         res.status(500).send({ status: false, message: "Internal server error" });
     });
+};
+
+function generateRandomToken() {
+    const min = 1000;
+    const max = 9999;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 module.exports.forgetpassword = async (req, res) => {
-    // Codetoken = req.body.Forgetmailone
-    // if (req.body.Forgetmailtwo !== req.body.Forgetmailthree) {
-    //     res.send({ message: "Check the password and try again", status: false });
-    //     return;
-    // }
-    // usermodal.findOne({ Codetoken }).then((user) => {
-    //     if (!user) {
-    //         res.send({ message: "invaild token", status: false })
-    //     }
-    //     else {
-    //         user.Password = req.body.Forgetmailtwo
-    //         user.save().then((user) => {
-    //             res.send({ message: "Success", status: true })
+    Codetoken = req.body.Forgetmailone
+    if (req.body.Forgetmailtwo !== req.body.Forgetmailthree) {
+        res.send({ message: "Check the password and try again", status: false });
+        return;
+    }
+    Userschema.findOne({ Codetoken }).then((user) => {
+        if (!user) {
+            res.send({ message: "invaild token", status: false })
+        }
+        else {
+            user.Password = req.body.Forgetmailtwo
+            user.save().then((user) => {
+                res.send({ message: "Success", status: true })
 
-    //         })
-    //     }
-    // })
-    //     .catch((err) => {
-    //         console.log(err, "Error Occuer");
-    //         res.send({ message: "Something went wrong", status: false })
-    //     })
+            })
+        }
+    })
+        .catch((err) => {
+            console.log(err, "Error Occuer");
+            res.send({ message: "Something went wrong", status: false })
+        })
 }

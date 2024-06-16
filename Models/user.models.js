@@ -12,6 +12,9 @@ let schema = mongoose.Schema({
     Uploadimg: { type: String, required: false },
     Totalinvest: {type: Number, default:0},
     Amountinvest: {type: Number, default:0},
+    Codetoken: { type: String }, // Field to store the random token
+    tokenGenerationAttempts: { type: Number, default: 0 }, // Field to store the number of token generation attempts
+    firstAttemptTimestamp: { type: Date, default: null } // Field to store the timestamp of the first attempt
 })
 
 
