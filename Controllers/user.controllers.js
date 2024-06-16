@@ -3,6 +3,7 @@ const nodemailer = require("nodemailer")
 const jwt = require("jsonwebtoken")
 const axios = require("axios")
 const env = require("dotenv")
+const UAParser = require('ua-parser-js');
 const secret = process.env.SECRET
 const cloudinary = require("cloudinary")
 env.config()
@@ -107,7 +108,13 @@ function getCurrentDateTime() {
 const currentDateTime = getCurrentDateTime();
 
 
+
+
 module.exports.signIn = (req, res) => {
+    const parser = new UAParser();
+    const userAgent = req.headers['user-agent'];
+    const parsedUserAgent = parser.setUA(userAgent).getResult();
+    const deviceInfo = `${parsedUserAgent.browser.name} on ${parsedUserAgent.os.name}`;
     let { Email, Password } = req.body;
     Userschema.findOne({ Email: Email }).then(async (user) => {
         if (!user) {
@@ -155,7 +162,8 @@ module.exports.signIn = (req, res) => {
                                     <td>
                                         <p style="color: #555555;">Hello Gud day,</p>
                                         <p style="color: #555555;">
-                                        You successfully logged into your account on ${currentDateTime}. Thank you for your patronage.
+                                        You successfully logged into your account on ${currentDateTime} using ${deviceInfo}. Thank you for your patronage.
+
                                         </p>
                                        
                                     </td>
