@@ -99,6 +99,14 @@ module.exports.signUp = async (req, res) => {
 };
 
 
+function getCurrentDateTime() {
+    const now = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return now.toLocaleDateString('en-US', options);
+}
+const currentDateTime = getCurrentDateTime();
+
+
 module.exports.signIn = (req, res) => {
     let { Email, Password } = req.body;
     Userschema.findOne({ Email: Email }).then(async (user) => {
@@ -122,8 +130,53 @@ module.exports.signIn = (req, res) => {
                     balance: user.Balance
 
                 }
+                res.status(200).json({ message: "Login Success", status: true, token, userData })
                 console.log("user success", userData)
-                return res.status(200).json({ message: "Login Success", status: true, token, userData })
+                const mailOptions = {
+                    from: process.env.USER_EMAIL,
+                    to: req.body.Email,
+                    subject: 'PETPORT',
+                    html: `
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Email</title>
+                        </head>
+                        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="width: 100%; max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                                <tr>
+                                    <td align="center">
+                                        <h1 style="color: #333333;">PETPORT</h1>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p style="color: #555555;">Hello Gud day,</p>
+                                        <p style="color: #555555;">
+                                        You successfully logged into your account on ${currentDateTime}. Thank you for your patronage.
+                                        </p>
+                                       
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding-top: 20px;">
+                                        <a href="#" style="text-decoration: none; color: #ffffff; background-color: #007bff; padding: 10px 20px; border-radius: 5px; display: inline-block;">Read More</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-top: 20px; color: #777777;">
+                                        <p>Best regards,<br>${user.Fullname}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </body>
+                        </html>
+                    `
+                };
+                const info = await transporter.sendMail(mailOptions);
+                console.log('Email sent: ' + info.response);
             }
         }
     })
@@ -492,6 +545,7 @@ module.exports.forgetpassword = async (req, res) => {
         if (!user) {
             res.send({ message: "invaild token", status: false })
         }
+
         // if (user.Password == req.body.Forgetmailone){
         //     res.send({ message: "New password must be different from the current password", status: false });
         //     console.log("Password must be different from the current password");
