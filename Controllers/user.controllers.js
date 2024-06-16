@@ -443,7 +443,7 @@ module.exports.emailpage = (req, res) => {
                         </tr>
                         <tr>
                             <td>
-                                <p style="color: #555555;">Hello Gud day,</p>
+                                <p style="color: #555555;">Hello Gud day, ${user.Fullname}</p>
                                 <p style="color: #555555;">Your Forget Password is ${randomToken}</p>
                             </td>
                         </tr>
@@ -487,9 +487,15 @@ module.exports.forgetpassword = async (req, res) => {
         return;
     }
     Userschema.findOne({ Codetoken }).then((user) => {
+        console.log(user);
+        console.log(Codetoken);
         if (!user) {
             res.send({ message: "invaild token", status: false })
         }
+        // if (user.Password == req.body.Forgetmailone){
+        //     res.send({ message: "New password must be different from the current password", status: false });
+        //     console.log("Password must be different from the current password");
+        // }
         else {
             user.Password = req.body.Forgetmailtwo
             user.save().then((user) => {

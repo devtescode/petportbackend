@@ -1,5 +1,5 @@
 const express = require('express');
-const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword} = require('../Controllers/user.controllers');
+const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, } = require('../Controllers/user.controllers');
 const router = express.Router()
 
 
@@ -13,5 +13,5 @@ router.post("/investnow", investnow)
 router.post("/changepassword", changepassword)
 router.post("/profile", profile)
 router.post("/emailpage", emailpage)
-router.post("forgetpassword", forgetpassword)
+router.post("/forgetpass", forgetpassword)
 module.exports = router
