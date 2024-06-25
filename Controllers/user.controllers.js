@@ -218,6 +218,7 @@ module.exports.dashBoard = (req, res) => {
             })
                 .catch((err) => {
                     console.log("error Occured", err);
+                    res.status(500).send({ status: false, message: "Internal server error" });
                 })
         }
     }))
