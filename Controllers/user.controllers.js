@@ -6,6 +6,7 @@ const env = require("dotenv")
 const UAParser = require('ua-parser-js');
 const secret = process.env.SECRET
 const cloudinary = require("cloudinary")
+const { v4: uuidv4 } = require('uuid');
 env.config()
 
 var transporter = nodemailer.createTransport({
@@ -202,27 +203,27 @@ module.exports.signIn = (req, res) => {
 };
 
 
-module.exports.dashBoard = (req, res) => {
-    let token = req.headers.authorization.split(" ")[1]
-    console.log(token);
-    jwt.verify(token, secret, ((err, result) => {
-        if (err) {
-            res.send({ status: false, message: "wrong token" })
-            console.log(err);
-        }
-        else {
-            Userschema.findOne({ _id: result.id }).then((user) => {
-                res.send({ status: true, message: "Success token correct", user })
-                console.log(user);
+    module.exports.dashBoard = (req, res) => {
+        let token = req.headers.authorization.split(" ")[1]
+        console.log(token);
+        jwt.verify(token, secret, ((err, result) => {
+            if (err) {
+                res.send({ status: false, message: "wrong token" })
+                console.log(err);
+            }
+            else {
+                Userschema.findOne({ _id: result.id }).then((user) => {
+                    res.send({ status: true, message: "Success token correct", user })
+                    console.log(user);
 
-            })
-                .catch((err) => {
-                    console.log("error Occured", err);
-                    res.status(500).send({ status: false, message: "Internal server error" });
                 })
-        }
-    }))
-}
+                    .catch((err) => {
+                        console.log("error Occured", err);
+                        res.status(500).send({ status: false, message: "Internal server error" });
+                    })
+            }
+        }))
+    }
 
 
 const products = [
@@ -625,4 +626,41 @@ module.exports.forgetpassword = async (req, res) => {
             console.log(err, "Error Occuer");
             res.send({ message: "Something went wrong", status: false })
         })
+}
+
+module.exports.fundaccount = async (req, res) => {
+    const { userId, amount } = req.body;
+    const INTERSWITCH_BASE_URL = 'https://api.interswitchng.com';
+
+    if (!userId || !amount) {
+        return res.status(400).json({ error: 'Invalid request parameters' });
+    }
+
+    try {
+        const authResponse = await axios.post(`${INTERSWITCH_BASE_URL}/passport/oauth/token`, {
+            grant_type: 'client_credentials',
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET
+        });
+
+        const { access_token } = authResponse.data;
+
+        const accountResponse = await axios.post(`${INTERSWITCH_BASE_URL}/api/v1/accounts`, {
+            amount,
+            userId,
+            expiry: 10 * 60 // 10 minutes in seconds
+        }, {
+            headers: {
+                Authorization: `Bearer ${access_token}`
+            }
+        });
+
+        const accountDetails = accountResponse.data;
+
+        res.json({ accountDetails });
+    } catch (err) {
+        console.error('Error generating dynamic account:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+
 }
