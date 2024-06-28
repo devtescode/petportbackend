@@ -5,6 +5,8 @@ const axios = require("axios")
 const env = require("dotenv")
 const UAParser = require('ua-parser-js');
 const secret = process.env.SECRET
+const PAYVESSEL_API_KEY = process.env.PAYVESSEL_API_KEY
+const PAYVESSEL_API_SECRET = process.env.PAYVESSEL_API_SECRET
 const cloudinary = require("cloudinary")
 const { v4: uuidv4 } = require('uuid');
 env.config()
@@ -104,11 +106,11 @@ module.exports.signUp = async (req, res) => {
 
 function getCurrentDateTime() {
     const now = new Date();
-    const options = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric', 
-        hour: '2-digit', 
+    const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
         minute: '2-digit',
     };
     return now.toLocaleDateString('en-US', options);
@@ -203,27 +205,27 @@ module.exports.signIn = (req, res) => {
 };
 
 
-    module.exports.dashBoard = (req, res) => {
-        let token = req.headers.authorization.split(" ")[1]
-        console.log(token);
-        jwt.verify(token, secret, ((err, result) => {
-            if (err) {
-                res.send({ status: false, message: "wrong token" })
-                console.log(err);
-            }
-            else {
-                Userschema.findOne({ _id: result.id }).then((user) => {
-                    res.send({ status: true, message: "Success token correct", user })
-                    console.log(user);
+module.exports.dashBoard = (req, res) => {
+    let token = req.headers.authorization.split(" ")[1]
+    console.log(token);
+    jwt.verify(token, secret, ((err, result) => {
+        if (err) {
+            res.send({ status: false, message: "wrong token" })
+            console.log(err);
+        }
+        else {
+            Userschema.findOne({ _id: result.id }).then((user) => {
+                res.send({ status: true, message: "Success token correct", user })
+                console.log(user);
 
+            })
+                .catch((err) => {
+                    console.log("error Occured", err);
+                    res.status(500).send({ status: false, message: "Internal server error" });
                 })
-                    .catch((err) => {
-                        console.log("error Occured", err);
-                        res.status(500).send({ status: false, message: "Internal server error" });
-                    })
-            }
-        }))
-    }
+        }
+    }))
+}
 
 
 const products = [
@@ -305,6 +307,16 @@ module.exports.investnow = async (req, res) => {
                 finduser.Balance -= productPrice;
                 finduser.Totalinvest += 1;
                 finduser.Amountinvest += productPrice;
+
+
+                const investment = {
+                    productId: getProduct.id,
+                    productName: getProduct.name,
+                    productPrice: getProduct.price
+                };
+                finduser.history.push(investment);
+
+
                 await finduser.save();
 
                 const userData = {
@@ -315,6 +327,7 @@ module.exports.investnow = async (req, res) => {
                     balance: finduser.Balance,
                     totalInvest: finduser.Totalinvest,
                     amountInvest: finduser.Amountinvest,
+                    history: finduser.history   
                 };
                 console.log("Product saved successfully");
                 res.send({ message: "Successfully saved", userData });
@@ -375,7 +388,7 @@ module.exports.investnow = async (req, res) => {
             console.log("User not found");
             res.status(404).send('User not found');
         }
-    } catch (error) {
+    } catch (error) {   
         console.error("Error saving product", error);
         res.status(500).send('Internal server error');
 
@@ -526,7 +539,7 @@ module.exports.emailpage = (req, res) => {
             return res.send({ status: false, message: "User not found" });
         }
         const now = new Date();
-        const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+        const tenMinutes = 10 * 60 * 1000;
 
         if (user.tokenGenerationAttempts >= 5) {
             if (now - new Date(user.firstAttemptTimestamp) < tenMinutes) {
@@ -629,38 +642,60 @@ module.exports.forgetpassword = async (req, res) => {
 }
 
 module.exports.fundaccount = async (req, res) => {
-    const { userId, amount } = req.body;
-    const INTERSWITCH_BASE_URL = 'https://api.interswitchng.com';
-
-    if (!userId || !amount) {
-        return res.status(400).json({ error: 'Invalid request parameters' });
-    }
-
+    console.log(req.body);
+    const { email, amount } = req.body;
     try {
-        const authResponse = await axios.post(`${INTERSWITCH_BASE_URL}/passport/oauth/token`, {
-            grant_type: 'client_credentials',
-            client_id: CLIENT_ID,
-            client_secret: CLIENT_SECRET
-        });
+        const user = await Userschema.findOne({ Email: email });
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
 
-        const { access_token } = authResponse.data;
-
-        const accountResponse = await axios.post(`${INTERSWITCH_BASE_URL}/api/v1/accounts`, {
-            amount,
-            userId,
-            expiry: 10 * 60 // 10 minutes in seconds
+        const response = await axios.post('https://api.payvessel.com/api/external/request/customerReservedAccount/', {
+            "email": `${email}`,
+            "name": `${user.Fullname}`,
+            "phoneNumber": `${user.Number}`,
+            "bankcode": ["120001"],
+            "account_type": "DYNAMIC",
+            "businessid":"B1CB53D683864E2B86A8B1FBCEA113A4",
         }, {
             headers: {
-                Authorization: `Bearer ${access_token}`
+                'api-key': `${PAYVESSEL_API_KEY}`,
+                'api-secret': `Bearer ${PAYVESSEL_API_SECRET}`,
+                'Content-Type': 'application/json'
             }
         });
-
-        const accountDetails = accountResponse.data;
-
-        res.json({ accountDetails });
-    } catch (err) {
-        console.error('Error generating dynamic account:', err);
-        res.status(500).json({ error: 'Internal server error' });
+        if (response.data.status === 'success') {
+            user.Balance += amount;
+            await user.save();
+            res.send({ status: true, message: 'Account funded successfully', balance: user.Balance });
+            console.log("account successfully");
+        } else {
+            res.status(400).send('Funding failed');
+            console.log("fail");
+        }
+    } catch (error) {
+        console.error('Error funding account', error.response.data);
+        res.status(500).send('Internal server error');
     }
+}
 
+
+module.exports.getHistory =async (req, res) => {
+    const email = req.body.email;
+    console.log(req.body);
+    
+    try {
+        const user = await Userschema.findOne({ Email: email });
+        console.log(user);
+        if (!user) {
+            console.log("User not found");
+            return res.status(404).send('User not found');
+        }
+        console.log("User Found", user.history);
+        const history = user.history
+        res.send({message: 'History found', history});
+    } catch (error) {
+        console.error("Error fetching investment history", error);
+        res.status(500).send('Internal server error');
+    }
 }

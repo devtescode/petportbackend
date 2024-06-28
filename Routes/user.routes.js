@@ -1,5 +1,5 @@
 const express = require('express');
-const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, } = require('../Controllers/user.controllers');
+const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, getHistory, } = require('../Controllers/user.controllers');
 const router = express.Router()
 
 
@@ -15,4 +15,6 @@ router.post("/profile", profile)
 router.post("/emailpage", emailpage)
 router.post("/forgetpass", forgetpassword)
 router.post("/fundaccount", fundaccount)
+router.post("/getHistory", getHistory)
+
 module.exports = router

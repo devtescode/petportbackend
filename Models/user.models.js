@@ -2,6 +2,14 @@ const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
 
 
+const investmentSchema = new mongoose.Schema({
+  productId: String,
+  productName: String,
+  productPrice: String,
+  investmentDate: { type: Date, default: Date.now }
+});
+
+
 let schema = mongoose.Schema({
     Fullname: { type: String, required: true },
     Number: { type: Number, required: true },
@@ -12,9 +20,10 @@ let schema = mongoose.Schema({
     Uploadimg: { type: String, required: false },
     Totalinvest: {type: Number, default:0},
     Amountinvest: {type: Number, default:0},
-    Codetoken: { type: Number, required: false }, // Field to store the random token
-    tokenGenerationAttempts: { type: Number, default: 0 }, // Field to store the number of token generation attempts
-    firstAttemptTimestamp: { type: Date, default: null } // Field to store the timestamp of the first attempt
+    Codetoken: { type: Number, required: false },
+    tokenGenerationAttempts: { type: Number, default: 0 }, 
+    firstAttemptTimestamp: { type: Date, default: null },
+    history: { type: [investmentSchema], default: [] } 
 })
 
 
