@@ -5,6 +5,7 @@ const env = require ('dotenv').config()
 const PORT = process.env.PORT || 5000
 const URI = process.env.URI
 const userRoutes = require("./Routes/user.routes")
+
 const cors = require('cors')
 app.use(cors())
 app.use(express.urlencoded({ extended:true, limit:"200mb"}))
@@ -18,6 +19,7 @@ mongoose.connect(URI)
     console.log(err);
 })
 app.use("/useranimalinvest", userRoutes)
+// app.use('/admin', adminRoutes);
 app.get("/", (req,res)=>{
     res.status(200).json({message:"Welcome to Animal company"})
 })

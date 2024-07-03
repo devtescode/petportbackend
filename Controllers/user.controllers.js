@@ -8,6 +8,8 @@ const secret = process.env.SECRET
 const PAYVESSEL_API_KEY = process.env.PAYVESSEL_API_KEY
 const PAYVESSEL_API_SECRET = process.env.PAYVESSEL_API_SECRET
 const cloudinary = require("cloudinary")
+const adminsecret = process.env.ADMIN_SECRET
+const bcrypt = require("bcrypt")
 const { v4: uuidv4 } = require('uuid');
 env.config()
 
@@ -144,8 +146,8 @@ module.exports.signIn = (req, res) => {
                     number: user.Number,
                     email: user.Email,
                     products: user.Product,
-                    balance: user.Balance
-
+                    balance: user.Balance,
+                    uploadimg : user.Uploadimg
                 }
                 res.status(200).json({ message: "Login Success", status: true, token, userData })
                 console.log("user success", userData)
@@ -699,3 +701,70 @@ module.exports.getHistory =async (req, res) => {
         res.status(500).send('Internal server error');
     }
 }
+
+
+module.exports.investperform = (req, res) => {
+    res.json(products)   
+}     
+
+
+
+const promoteToAdmin = async (Email) => {
+    try {
+        const user = await Userschema.findOne({ Email });
+        if (!user) {
+            console.log('User not found');
+            return;
+        }
+        user.role = 'admin';
+        await user.save();
+        console.log(`User ${Email} promoted to admin`);
+    } catch (error) {
+        console.error('Error promoting user:', error);
+    }   
+};
+promoteToAdmin('teslimagboola09@gmail.com');
+
+module.exports.Adminlogin = async(req, res) => {
+    const { Email, password } = req.body;
+    try {
+        const user = await Userschema.findOne({ Email : Email });
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        if (user.role !== 'admin') {
+            return res.status(403).send('Access denied');
+        }
+
+        const isMatch = await bcrypt.compare(password, user.Password);
+        if (!isMatch) {
+            return res.status(401).send('Invalid credentials');
+        }
+        const admintoken = jwt.sign({ userId: user._id, role: user.role }, adminsecret, { expiresIn: '1h' });
+        res.send({ admintoken });
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).send('Internal server error');
+    }
+}
+
+
+const authAdmin = (req, res, next) => {
+    const token = req.header('x-auth-token');
+
+    if (!token) {
+        return res.status(401).send('No token, authorization denied');
+    }
+
+    try {
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        if (decoded.role !== 'admin') {
+            return res.status(403).send('Access denied');
+        }
+        req.user = decoded.userId;
+        next();
+    } catch (error) {
+        res.status(401).send('Token is not valid');
+    }
+};

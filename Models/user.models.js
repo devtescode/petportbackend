@@ -23,7 +23,8 @@ let schema = mongoose.Schema({
     Codetoken: { type: Number, required: false },
     tokenGenerationAttempts: { type: Number, default: 0 }, 
     firstAttemptTimestamp: { type: Date, default: null },
-    history: { type: [investmentSchema], default: [] } 
+    history: { type: [investmentSchema], default: [] },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' } 
 })
 
 
