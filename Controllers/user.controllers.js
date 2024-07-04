@@ -147,7 +147,7 @@ module.exports.signIn = (req, res) => {
                     email: user.Email,
                     products: user.Product,
                     balance: user.Balance,
-                    uploadimg : user.Uploadimg
+                    uploadimg: user.Uploadimg
                 }
                 res.status(200).json({ message: "Login Success", status: true, token, userData })
                 console.log("user success", userData)
@@ -329,7 +329,7 @@ module.exports.investnow = async (req, res) => {
                     balance: finduser.Balance,
                     totalInvest: finduser.Totalinvest,
                     amountInvest: finduser.Amountinvest,
-                    history: finduser.history   
+                    history: finduser.history
                 };
                 console.log("Product saved successfully");
                 res.send({ message: "Successfully saved", userData });
@@ -390,7 +390,7 @@ module.exports.investnow = async (req, res) => {
             console.log("User not found");
             res.status(404).send('User not found');
         }
-    } catch (error) {   
+    } catch (error) {
         console.error("Error saving product", error);
         res.status(500).send('Internal server error');
 
@@ -658,7 +658,7 @@ module.exports.fundaccount = async (req, res) => {
             "phoneNumber": `${user.Number}`,
             "bankcode": ["120001"],
             "account_type": "DYNAMIC",
-            "businessid":"B1CB53D683864E2B86A8B1FBCEA113A4",
+            "businessid": "B1CB53D683864E2B86A8B1FBCEA113A4",
         }, {
             headers: {
                 'api-key': `${PAYVESSEL_API_KEY}`,
@@ -682,10 +682,10 @@ module.exports.fundaccount = async (req, res) => {
 }
 
 
-module.exports.getHistory =async (req, res) => {
+module.exports.getHistory = async (req, res) => {
     const email = req.body.email;
     console.log(req.body);
-    
+
     try {
         const user = await Userschema.findOne({ Email: email });
         console.log(user);
@@ -695,7 +695,7 @@ module.exports.getHistory =async (req, res) => {
         }
         console.log("User Found", user.history);
         const history = user.history
-        res.send({message: 'History found', history});
+        res.send({ message: 'History found', history });
     } catch (error) {
         console.error("Error fetching investment history", error);
         res.status(500).send('Internal server error');
@@ -704,8 +704,8 @@ module.exports.getHistory =async (req, res) => {
 
 
 module.exports.investperform = (req, res) => {
-    res.json(products)   
-}     
+    res.json(products)
+}
 
 
 
@@ -721,33 +721,43 @@ const promoteToAdmin = async (Email) => {
         console.log(`User ${Email} promoted to admin`);
     } catch (error) {
         console.error('Error promoting user:', error);
-    }   
+    }
 };
 promoteToAdmin('teslimagboola09@gmail.com');
 
-module.exports.Adminlogin = async(req, res) => {
+module.exports.Adminlogin = async (req, res) => {
     const { Email, password } = req.body;
     try {
-        const user = await Userschema.findOne({ Email : Email });
+        const user = await Userschema.findOne({ Email: Email });
         if (!user) {
-            return res.status(404).send('User not found');
+            return res.json({ message: 'Admin Email not found', status: false });
         }
 
         if (user.role !== 'admin') {
-            return res.status(403).send('Access denied');
+            return res.json({ message: 'Access denied', status: false });
         }
 
         const isMatch = await bcrypt.compare(password, user.Password);
         if (!isMatch) {
-            return res.status(401).send('Invalid credentials');
+            return res.json({ message: 'Incorrect Password', status: false });
         }
+
+        // const correctpassword = await user.compareUser(Password)
+        // if (!correctpassword) {
+        //     res.status(200).json({ message: "Incorrect Password", status: false })
+        //     console.log("Incorrect Password");
+        // }
+
         const admintoken = jwt.sign({ userId: user._id, role: user.role }, adminsecret, { expiresIn: '1h' });
-        res.send({ admintoken });
+        // console.log(user);
+        console.log(admintoken);
+        return res.send({ message: "Login Success", status: true, admintoken });
     } catch (error) {
         console.error('Error during login:', error);
-        res.status(500).send('Internal server error');
+        return res.status(500).send('Internal server error');
     }
-}
+};
+
 
 
 const authAdmin = (req, res, next) => {
