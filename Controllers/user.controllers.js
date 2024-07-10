@@ -742,12 +742,6 @@ module.exports.Adminlogin = async (req, res) => {
             return res.json({ message: 'Incorrect Password', status: false });
         }
 
-        // const correctpassword = await user.compareUser(Password)
-        // if (!correctpassword) {
-        //     res.status(200).json({ message: "Incorrect Password", status: false })
-        //     console.log("Incorrect Password");
-        // }
-
         const admintoken = jwt.sign({ userId: user._id, role: user.role }, adminsecret, { expiresIn: '1h' });
         // console.log(user);
         console.log(admintoken);
@@ -760,21 +754,21 @@ module.exports.Adminlogin = async (req, res) => {
 
 
 
-const authAdmin = (req, res, next) => {
-    const token = req.header('x-auth-token');
+// const authAdmin = (req, res, next) => {
+//     const token = req.header('x-auth-token');
 
-    if (!token) {
-        return res.status(401).send('No token, authorization denied');
-    }
+//     if (!token) {
+//         return res.status(401).send('No token, authorization denied');
+//     }
 
-    try {
-        const decoded = jwt.verify(token, 'your_jwt_secret');
-        if (decoded.role !== 'admin') {
-            return res.status(403).send('Access denied');
-        }
-        req.user = decoded.userId;
-        next();
-    } catch (error) {
-        res.status(401).send('Token is not valid');
-    }
-};
+//     try {
+//         const decoded = jwt.verify(token, 'your_jwt_secret');
+//         if (decoded.role !== 'admin') {
+//             return res.status(403).send('Access denied');
+//         }
+//         req.user = decoded.userId;
+//         next();
+//     } catch (error) {
+//         res.status(401).send('Token is not valid');
+//     }
+// };
