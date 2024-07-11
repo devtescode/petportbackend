@@ -775,7 +775,6 @@ module.exports.Adminlogin = async (req, res) => {
 // };
 
 module.exports.Admindb = (req, res)=>{
-    console.log(req.body);
     let admintoken = req.headers.authorization.split(" ")[1]
     jwt.verify(admintoken, adminsecret, ((err, result) => {
         if (err) {
@@ -783,8 +782,14 @@ module.exports.Admindb = (req, res)=>{
             console.log(err);
         }
         else {
-            console.log(admintoken);
-            res.send({ status: true, message: "Valid token" })
+            // console.log(admintoken);    
+            // res.send({ status: true, message: "Valid token" })
+            // console.log(result);
+            Userschema.findOne({ _id: result.userId }).then((user) => {
+                res.send({ status: true, message: "Valid token", user })
+                console.log(user);
+
+            })
         }
     }))
 }
