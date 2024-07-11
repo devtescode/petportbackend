@@ -741,11 +741,12 @@ module.exports.Adminlogin = async (req, res) => {
         if (!isMatch) {
             return res.json({ message: 'Incorrect Password', status: false });
         }
-
-        const admintoken = jwt.sign({ userId: user._id, role: user.role }, adminsecret, { expiresIn: '1h' });
-        // console.log(user);
-        console.log(admintoken);
-        return res.send({ message: "Login Success", status: true, admintoken });
+        else {
+            const admintoken = jwt.sign({ userId: user._id, role: user.role }, adminsecret, { expiresIn: '1h' });
+            // console.log(user);
+            console.log(admintoken);
+            return res.send({ message: "Login Success", status: true, admintoken });
+        }
     } catch (error) {
         console.error('Error during login:', error);
         return res.status(500).send('Internal server error');
@@ -772,3 +773,18 @@ module.exports.Adminlogin = async (req, res) => {
 //         res.status(401).send('Token is not valid');
 //     }
 // };
+
+module.exports.Admindb = (req, res)=>{
+    console.log(req.body);
+    let admintoken = req.headers.authorization.split(" ")[1]
+    jwt.verify(admintoken, adminsecret, ((err, result) => {
+        if (err) {
+            res.send({ status: false, message: "wrong token" })
+            console.log(err);
+        }
+        else {
+            console.log(admintoken);
+            res.send({ status: true, message: "Valid token" })
+        }
+    }))
+}
