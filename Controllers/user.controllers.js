@@ -787,9 +787,19 @@ module.exports.Admindb = (req, res)=>{
             // console.log(result);
             Userschema.findOne({ _id: result.userId }).then((user) => {
                 res.send({ status: true, message: "Valid token", user })
-                console.log(user);
-
+                // console.log(user);
             })
         }
     }))
+}
+
+module.exports.getall = async (req, res) => {
+    try{
+        const users = await Userschema.find()
+        res.json(users);
+        console.log(users); 
+    }catch(err){
+        res.status(500).json({ message: err.message });
+        console.log(err.message);
+    }
 }
