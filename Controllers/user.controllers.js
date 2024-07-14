@@ -723,8 +723,7 @@ const promoteToAdmin = async (Email) => {
         console.error('Error promoting user:', error);
     }
 };
-promoteToAdmin('teslimagboola09@gmail.com');
-
+promoteToAdmin('petport09@gmail.com');
 module.exports.Adminlogin = async (req, res) => {
     const { Email, password } = req.body;
     try {
