@@ -824,7 +824,7 @@ module.exports.putall = async (req, res) => {
             
         }
         res.json(updatedUser);
-        console.log(updatedUser);
+        // console.log(updatedUser);
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
@@ -835,7 +835,7 @@ module.exports.putall = async (req, res) => {
 //     const user = new User(req.body);
 //     try {
 //       const newUser = await user.save();
-//       res.status(201).json(newUser);
+//       res.statu      s(201).json(newUser);
 //     } catch (err) {
 //       res.status(400).json({ message: err.message });
 //     }
@@ -845,7 +845,9 @@ module.exports.postall = async (req, res) => {
     const user = new Userschema(req.body);
     try {
         const newUser = await user.save();
-        res.status(201).json(newUser);
+        // res.status(201).json(newUser);
+        res.json(newUser);
+        console.log(newUser);
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
