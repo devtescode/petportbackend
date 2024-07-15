@@ -773,7 +773,7 @@ module.exports.Adminlogin = async (req, res) => {
 //     }
 // };
 
-module.exports.Admindb = (req, res)=>{
+module.exports.Admindb = (req, res) => {
     let admintoken = req.headers.authorization.split(" ")[1]
     jwt.verify(admintoken, adminsecret, ((err, result) => {
         if (err) {
@@ -793,12 +793,60 @@ module.exports.Admindb = (req, res)=>{
 }
 
 module.exports.getall = async (req, res) => {
-    try{
+    try {
         const users = await Userschema.find()
         res.json(users);
-        console.log(users); 
-    }catch(err){
+        console.log(users);
+    } catch (err) {
         res.status(500).json({ message: err.message });
         console.log(err.message);
+    }
+}
+
+
+// router.put('/:id', async (req, res) => {
+//     try {
+//       const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//       if (!updatedUser) {
+//         return res.status(404).json({ message: 'User not found' });
+//       }
+//       res.json(updatedUser);
+//     } catch (err) {
+//       res.status(400).json({ message: err.message });
+//     }
+//   });
+
+module.exports.putall = async (req, res) => {
+    try {
+        const updatedUser = await Userschema.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+            
+        }
+        res.json(updatedUser);
+        console.log(updatedUser);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+}
+
+
+// router.post('/', async (req, res) => {
+//     const user = new User(req.body);
+//     try {
+//       const newUser = await user.save();
+//       res.status(201).json(newUser);
+//     } catch (err) {
+//       res.status(400).json({ message: err.message });
+//     }
+//   });
+
+module.exports.postall = async (req, res) => {
+    const user = new Userschema(req.body);
+    try {
+        const newUser = await user.save();
+        res.status(201).json(newUser);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
     }
 }
