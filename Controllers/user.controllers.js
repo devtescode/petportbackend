@@ -821,7 +821,7 @@ module.exports.putall = async (req, res) => {
         const updatedUser = await Userschema.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!updatedUser) {
             return res.status(404).json({ message: 'User not found' });
-            
+
         }
         res.json(updatedUser);
         // console.log(updatedUser);
@@ -835,7 +835,7 @@ module.exports.putall = async (req, res) => {
 //     const user = new User(req.body);
 //     try {
 //       const newUser = await user.save();
-//       res.statu      s(201).json(newUser);
+//       res.statu          s(201).json(newUser);
 //     } catch (err) {
 //       res.status(400).json({ message: err.message });
 //     }
@@ -850,5 +850,21 @@ module.exports.postall = async (req, res) => {
         console.log(newUser);
     } catch (err) {
         res.status(400).json({ message: err.message });
+    }
+}
+
+module.exports.delecteach = async (req, res) => {
+    console.log(req.body);
+    try {
+        const deletedUser = await Userschema.findByIdAndDelete(req.params.id);
+        if (!deletedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        // res.json(deletedUser);
+        res.json({ message: 'User deleted' });
+        console.log(deletedUser);
+    }
+    catch (err) {
+        res.status(500).json({ message: err.message });
     }
 }
