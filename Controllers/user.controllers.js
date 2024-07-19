@@ -868,3 +868,13 @@ module.exports.delecteach = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 }
+
+module.exports.getuseranimalinvest = async (req, res) => {
+   
+    try {
+        const users = await Userschema.find();
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
