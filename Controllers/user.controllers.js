@@ -870,7 +870,7 @@ module.exports.delecteach = async (req, res) => {
 }
 
 module.exports.getuseranimalinvest = async (req, res) => {
-   
+
     try {
         const users = await Userschema.find();
         res.json(users);
@@ -879,19 +879,53 @@ module.exports.getuseranimalinvest = async (req, res) => {
     }
 }
 
-module.exports.totalbalance = async (req, res) =>{
+module.exports.totalbalance = async (req, res) => {
     try {
         const totalBalance = await Userschema.aggregate([
-          {
-            $group: {
-              _id: null,
-              totalBalance: { $sum: "$Balance" }
+            {
+                $group: {
+                    _id: null,
+                    totalBalance: { $sum: "$Balance" }
+                }
             }
-          }
         ]);
-    
+
         res.json({ totalBalance: totalBalance[0]?.totalBalance || 0 });
-      } catch (err) {
+    } catch (err) {
         res.status(500).json({ message: err.message });
-      }
+    }
+}
+
+module.exports.totalAmountInvested = async (req, res) => {
+    try {
+        const totalAmountInvested = await Userschema.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalAmountInvested: { $sum: "$Amountinvest" }
+                }
+            }
+        ]);
+
+        res.json({ totalAmountInvested: totalAmountInvested[0]?.totalAmountInvested || 0 });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+module.exports.Totalinvest = async (req, res) => {
+    try {
+        const totalinvesttogether = await Userschema.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalinvesttogether: { $sum: "$Totalinvest" }
+                }
+            }
+        ])
+        res.json({  totalinvesttogether     : totalinvesttogether[0]?.totalinvesttogether || 0 });
+    }
+    catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 }
