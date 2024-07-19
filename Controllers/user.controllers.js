@@ -878,3 +878,20 @@ module.exports.getuseranimalinvest = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 }
+
+module.exports.totalbalance = async (req, res) =>{
+    try {
+        const totalBalance = await Userschema.aggregate([
+          {
+            $group: {
+              _id: null,
+              totalBalance: { $sum: "$Balance" }
+            }
+          }
+        ]);
+    
+        res.json({ totalBalance: totalBalance[0]?.totalBalance || 0 });
+      } catch (err) {
+        res.status(500).json({ message: err.message });
+      }
+}
