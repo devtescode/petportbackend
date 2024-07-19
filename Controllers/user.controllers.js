@@ -693,7 +693,7 @@ module.exports.getHistory = async (req, res) => {
             console.log("User not found");
             return res.status(404).send('User not found');
         }
-        console.log("User Found", user.history);
+        console.log("User Foun  d", user.history);
         const history = user.history
         res.send({ message: 'History found', history });
     } catch (error) {
