@@ -940,14 +940,14 @@ module.exports.changePasswordAdmin = async (req, res) => {
   
     jwt.verify(admintoken, adminsecret, async (err, decoded) => {
       if (err) {
-        return res.status(401).send({ success: false, message: "Invalid token" });
+        return res.status(200).send({ success: false, message: "Invalid token" });
       }
   
       try {
         const user = await Userschema.findOne({ Email: email });
         if (!user) {
           console.log("User not found");
-          return res.status(404).send({ success: false, message: 'User not found' });
+          return res.status(200).send({ success: false, message: 'User not found' });
         }
   
         const isMatch = await bcrypt.compare(oldPassword, user.Password);
@@ -955,25 +955,57 @@ module.exports.changePasswordAdmin = async (req, res) => {
         if (!isMatch) {
             console.log("incorrcet pass", isMatch);
           console.log("Incorrect current password");
-          return res.status(400).send({ success: false, message: 'Incorrect current password' });
+          return res.status(200).send({ success: false, message: 'Incorrect current password' });
         }
   
         if (oldPassword === newPassword) {
           console.log("New password cannot be the same as the old password");
-          return res.status(400).send({ success: false, message: 'New password cannot be the same as the old password' });
+          return res.status(200).send({ success: false, message: 'New password cannot be the same as the old password' });
         }
-  
-        // const salt = await bcrypt.genSalt(10);
-        // // const hashedPassword = await bcrypt.hash(newPassword, salt);
-        // // user.Password = hashedPassword;
-        user.Password = req.body.newPassword;
-        await user.save();
-
-        console.log("Password changed successfully");
-        return res.status(200).send({ success: true, message: 'Password changed successfully' });
+        else{
+            user.Password = req.body.newPassword;
+            await user.save();
+    
+            console.log("Password changed successfully");
+            return res.status(200).send({ success: true, message: 'Password changed successfully' });
+        }
       } catch (error) {
         console.error('Error changing password', error);
-        return res.status(500).send({ success: false, message: 'Internal server error' });
+        res.send({ message: 'Error Occurred' });
       }
     });
   };
+
+
+// module.exports.changepassword = async (req, res) => {
+//     jwt.verify(req.body.token, secret, async (err, result) => {
+//         if (err) {
+//             res.send({ status: false, message: "wrong token" });
+//             console.log(err);
+//         } else {
+//             try {
+//                 const user = await Userschema.findOne({ _id: result.id });
+//                 if (!user) {
+//                     return res.status(200).json({ message: "Username Not Found", status: false });
+//                 } else {
+//                     const correctpassword = await user.compareUser(req.body.OldPassword);
+//                     if (!correctpassword) {
+//                         console.log("incorrect password");
+//                         return res.status(200).json({ message: "Incorrect Password", status: false });
+//                     } else if (req.body.OldPassword === req.body.NewPassword) {
+//                         console.log("old password and new password are the same");
+//                         return res.status(200).json({ message: "New password cannot be the same as the old password", status: false });
+//                     } else {
+//                         user.Password = req.body.NewPassword;
+//                         await user.save();
+//                         console.log("password changed successfully");
+//                         return res.status(200).json({ message: "Password changed successfully", status: true });
+//                     }
+//                 }
+//             } catch (err) {
+//                 res.send({ message: 'Error Occurred' });
+//                 console.log(err, "Error Occurred");
+//             }
+//         }
+//     });
+// }
