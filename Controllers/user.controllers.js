@@ -147,10 +147,17 @@ module.exports.signIn = (req, res) => {
                     email: user.Email,
                     products: user.Product,
                     balance: user.Balance,
-                    uploadimg: user.Uploadimg
+                    uploadimg: user.Uploadimg,
+                    totalinvest: user.Totalinvest,
+                    amountinvest: user.Amountinvest,
+                    codetoken: user.Codetoken,
+                    TokenGenerationAttempts: user.tokenGenerationAttempts,
+                    FirstAttemptTimestamp: user.firstAttemptTimestamp,
+                    History: user.history
                 }
                 res.status(200).json({ message: "Login Success", status: true, token, userData })
-                console.log("user success", userData)
+                // console.log("user success", userData)
+                // console.log(token);
                 const mailOptions = {
                     from: process.env.USER_EMAIL,
                     to: req.body.Email,
@@ -702,7 +709,6 @@ module.exports.getHistory = async (req, res) => {
     }
 }
 
-
 module.exports.investperform = (req, res) => {
     res.json(products)
 }
@@ -724,10 +730,11 @@ const promoteToAdmin = async (Email) => {
     }
 };
 promoteToAdmin('petport09@gmail.com');
+
 module.exports.Adminlogin = async (req, res) => {
     const { Email, password } = req.body;
     try {
-        const user = await Userschema.findOne({ Email: Email });
+        const user = await Userschema.findOne({ Email });
         if (!user) {
             return res.json({ message: 'Admin Email not found', status: false });
         }
@@ -736,21 +743,19 @@ module.exports.Adminlogin = async (req, res) => {
             return res.json({ message: 'Access denied', status: false });
         }
 
-        const isMatch = await bcrypt.compare(password, user.Password);
+        const isMatch = await user.compareUser(password);
         if (!isMatch) {
             return res.json({ message: 'Incorrect Password', status: false });
         }
-        else {
-            const admintoken = jwt.sign({ userId: user._id, role: user.role }, adminsecret, { expiresIn: '1h' });
-            // console.log(user);
-            console.log(admintoken);
-            return res.send({ message: "Login Success", status: true, admintoken });
-        }
+
+        const admintoken = jwt.sign({ userId: user._id, role: user.role }, adminsecret, { expiresIn: '1h' });
+        return res.send({ message: 'Login Success', status: true, admintoken });
     } catch (error) {
         console.error('Error during login:', error);
         return res.status(500).send('Internal server error');
     }
 };
+
 
 
 
@@ -781,7 +786,7 @@ module.exports.Admindb = (req, res) => {
             console.log(err);
         }
         else {
-            // console.log(admintoken);    
+            console.log(admintoken);
             // res.send({ status: true, message: "Valid token" })
             // console.log(result);
             Userschema.findOne({ _id: result.userId }).then((user) => {
@@ -923,9 +928,52 @@ module.exports.Totalinvest = async (req, res) => {
                 }
             }
         ])
-        res.json({  totalinvesttogether     : totalinvesttogether[0]?.totalinvesttogether || 0 });
+        res.json({ totalinvesttogether: totalinvesttogether[0]?.totalinvesttogether || 0 });
     }
     catch (err) {
         res.status(500).json({ message: err.message });
     }
 }
+
+module.exports.changePasswordAdmin = async (req, res) => {
+    const { email, oldPassword, newPassword, admintoken } = req.body;
+  
+    jwt.verify(admintoken, adminsecret, async (err, decoded) => {
+      if (err) {
+        return res.status(401).send({ success: false, message: "Invalid token" });
+      }
+  
+      try {
+        const user = await Userschema.findOne({ Email: email });
+        if (!user) {
+          console.log("User not found");
+          return res.status(404).send({ success: false, message: 'User not found' });
+        }
+  
+        const isMatch = await bcrypt.compare(oldPassword, user.Password);
+        // const correctpassword = await user.compareUser(req.body.OldPassword);
+        if (!isMatch) {
+            console.log("incorrcet pass", isMatch);
+          console.log("Incorrect current password");
+          return res.status(400).send({ success: false, message: 'Incorrect current password' });
+        }
+  
+        if (oldPassword === newPassword) {
+          console.log("New password cannot be the same as the old password");
+          return res.status(400).send({ success: false, message: 'New password cannot be the same as the old password' });
+        }
+  
+        // const salt = await bcrypt.genSalt(10);
+        // // const hashedPassword = await bcrypt.hash(newPassword, salt);
+        // // user.Password = hashedPassword;
+        user.Password = req.body.newPassword;
+        await user.save();
+
+        console.log("Password changed successfully");
+        return res.status(200).send({ success: true, message: 'Password changed successfully' });
+      } catch (error) {
+        console.error('Error changing password', error);
+        return res.status(500).send({ success: false, message: 'Internal server error' });
+      }
+    });
+  };
