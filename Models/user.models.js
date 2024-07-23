@@ -10,6 +10,13 @@ const investmentSchema = new mongoose.Schema({
 });
 
 
+const PlanSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    description: { type: String, required: true },
+    price: { type: Number, required: true },
+    image: { type: String,  required: false } 
+});
+
 let schema = mongoose.Schema({
     Fullname: { type: String, required: true },
     Number: { type: Number, required: true },
@@ -77,4 +84,5 @@ schema.methods.compareUser = async function (userPass) {
 
 
 const Userschema = mongoose.model("useranimalinvest", schema)
-module.exports = {Userschema}
+const Plan = mongoose.model("Plan", PlanSchema);
+module.exports = {Userschema, Plan}

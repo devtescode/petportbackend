@@ -1,4 +1,4 @@
-const { Userschema } = require("../Models/user.models")
+const { Userschema, Plan } = require("../Models/user.models")
 const nodemailer = require("nodemailer")
 const jwt = require("jsonwebtoken")
 const axios = require("axios")
@@ -937,41 +937,71 @@ module.exports.Totalinvest = async (req, res) => {
 
 module.exports.changePasswordAdmin = async (req, res) => {
     const { email, oldPassword, newPassword, admintoken } = req.body;
-  
+
     jwt.verify(admintoken, adminsecret, async (err, decoded) => {
-      if (err) {
-        return res.status(200).send({ success: false, message: "Invalid token" });
-      }
-  
-      try {
-        const user = await Userschema.findOne({ Email: email });
-        if (!user || user.role !== 'admin') {
-          console.log("User not found");
-          return res.status(200).send({ success: false, message: 'User not found' });
+        if (err) {
+            return res.status(200).send({ success: false, message: "Invalid token" });
         }
-  
-        const isMatch = await bcrypt.compare(oldPassword, user.Password);
-        // const correctpassword = await user.compareUser(req.body.OldPassword);
-        if (!isMatch) {
-            console.log("incorrcet pass", isMatch);
-          console.log("Incorrect current password");
-          return res.status(200).send({ success: false, message: 'Incorrect current password' });
+
+        try {
+            const user = await Userschema.findOne({ Email: email });
+            if (!user || user.role !== 'admin') {
+                console.log("User not found");
+                return res.status(200).send({ success: false, message: 'User not found' });
+            }
+
+            const isMatch = await bcrypt.compare(oldPassword, user.Password);
+            // const correctpassword = await user.compareUser(req.body.OldPassword);
+            if (!isMatch) {
+                console.log("incorrcet pass", isMatch);
+                console.log("Incorrect current password");
+                return res.status(200).send({ success: false, message: 'Incorrect current password' });
+            }
+
+            if (oldPassword === newPassword) {
+                console.log("New password cannot be the same as the old password");
+                return res.status(200).send({ success: false, message: 'New password cannot be the same as the old password' });
+            }
+            else {
+                user.Password = req.body.newPassword;
+                await user.save();
+
+                console.log("Password changed successfully");
+                return res.status(200).send({ success: true, message: 'Password changed successfully' });
+            }
+        } catch (error) {
+            console.error('Error changing password', error);
+            res.send({ message: 'Error Occurred' });
         }
-  
-        if (oldPassword === newPassword) {
-          console.log("New password cannot be the same as the old password");
-          return res.status(200).send({ success: false, message: 'New password cannot be the same as the old password' });
-        }
-        else{
-            user.Password = req.body.newPassword;
-            await user.save();
-    
-            console.log("Password changed successfully");
-            return res.status(200).send({ success: true, message: 'Password changed successfully' });
-        }
-      } catch (error) {
-        console.error('Error changing password', error);
-        res.send({ message: 'Error Occurred' });
-      }
     });
-  };
+};
+
+module.exports.createplan = async (req, res) => {
+    const { name, description, price } = req.body;
+
+    try {
+        const newPlan = new Plan({
+            name,
+            description,
+            price,
+        });
+        console.log(newPlan);
+        await newPlan.save();
+        res.json({ success: true, message: 'Plan created successfully' });
+    } catch (error) {
+        console.error('Error creating plan:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
+
+
+module.exports.getuserplans = async(req, res) => {
+    try {
+        const plans = await Plan.find();
+        console.log(plans);
+        res.json({ success: true, message: 'Plan get successfully', plans });
+    } catch (error) {
+        console.error('Error fetching plans:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
