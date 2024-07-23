@@ -945,7 +945,7 @@ module.exports.changePasswordAdmin = async (req, res) => {
   
       try {
         const user = await Userschema.findOne({ Email: email });
-        if (!user) {
+        if (!user || user.role !== 'admin') {
           console.log("User not found");
           return res.status(200).send({ success: false, message: 'User not found' });
         }
