@@ -1017,7 +1017,7 @@ module.exports.createplan = async (req, res) => {
 }
 
 
-module.exports.getuserplans = async(req, res) => {
+module.exports.getuserplans = async (req, res) => {
     try {
         const plans = await Plan.find();
         console.log(plans);
@@ -1025,5 +1025,22 @@ module.exports.getuserplans = async(req, res) => {
     } catch (error) {
         console.error('Error fetching plans:', error);
         res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
+
+module.exports.adminplansdelect = async (req, res) => {
+    try {
+        const plan = await Plan.findById(req.params.id);
+
+        if (!plan) {
+            return res.status(404).json({ success: false, message: 'Plan not found' });
+        }
+        else {
+            await plan.remove();
+            res.json({ success: true, message: 'Plan deleted successfully' });
+        }
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
     }
 }
