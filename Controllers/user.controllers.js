@@ -1035,9 +1035,9 @@ module.exports.adminplansdelect = async (req, res) => {
         if (!plan) {
             return res.status(404).json({ success: false, message: 'Plan not found' });
         }
-        else {
-            await plan.remove();
-            res.json({ success: true, message: 'Plan deleted successfully' });
+        else {  
+            await Plan.findByIdAndDelete(req.params.id);
+            res.json({ success: true, message: 'Plan deleted successfully' });  
         }
     } catch (err) {
         console.error(err.message);
