@@ -1060,3 +1060,16 @@ module.exports.updateplan = async (req, res)=>{
         res.status(500).send('Server Error');
     }
 }
+
+module.exports.getplan = async(req, res) => {
+    try {
+        const plan = await Plan.findById(req.params.id);
+        if (!plan) {
+            return res.status(404).json({ success: false, message: 'Plan not found' });
+        }
+        res.json({ success: true, plan });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+}
