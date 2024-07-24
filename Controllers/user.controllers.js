@@ -1044,3 +1044,19 @@ module.exports.adminplansdelect = async (req, res) => {
         res.status(500).send('Server Error');
     }
 }
+
+module.exports.updateplan = async (req, res)=>{
+    try {
+        const { id } = req.params;
+        const updatedPlan = await Plan.findByIdAndUpdate(id, req.body, { new: true });
+
+        if (!updatedPlan) {
+            return res.status(404).json({ success: false, message: 'Plan not found' });
+        }
+
+        res.json({ success: true, plan: updatedPlan });
+    } catch (err) {
+        console.error('Error updating plan:', err.message);
+        res.status(500).send('Server Error');
+    }
+}

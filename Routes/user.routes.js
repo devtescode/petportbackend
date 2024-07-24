@@ -1,5 +1,5 @@
 const express = require('express');
-const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, getHistory, investperform, Adminlogin, Admindb, getall, putall, postall, delecteach, getuseranimalinvest, totalbalance, totalAmountInvested, Totalinvest, changePasswordAdmin, createplan, getuserplans, adminplansdelect,  } = require('../Controllers/user.controllers');
+const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, getHistory, investperform, Adminlogin, Admindb, getall, putall, postall, delecteach, getuseranimalinvest, totalbalance, totalAmountInvested, Totalinvest, changePasswordAdmin, createplan, getuserplans, adminplansdelect, updateplan,  } = require('../Controllers/user.controllers');
 const router = express.Router()
 
 
@@ -31,4 +31,5 @@ router.post("/changePasswordAdmin", changePasswordAdmin)
 router.post("/createplan", createplan)
 router.get("/getuserplans", getuserplans)
 router.delete("/adminplansdelect/:id", adminplansdelect)
+router.put("/updateplan/:id", updateplan)
 module.exports = router
