@@ -977,15 +977,37 @@ module.exports.changePasswordAdmin = async (req, res) => {
 };
 
 module.exports.createplan = async (req, res) => {
-    const { name, description, price } = req.body;
+    // const { name, description, price } = req.body;
+
+    // try {
+    //     const newPlan = new Plan({
+    //         name,
+    //         description,
+    //         price,
+    //     });
+    //     console.log(newPlan);
+    //     await newPlan.save();
+    //     res.json({ success: true, message: 'Plan created successfully' });
+    // } catch (error) {
+    //     console.error('Error creating plan:', error);
+    //     res.status(500).json({ success: false, message: 'Internal server error' });
+    // }
+    const { name, description, price, file } = req.body;
 
     try {
+        let imageUrl = '';
+        if (file) {
+            const uploadResult = await cloudinary.uploader.upload(file);
+            imageUrl = uploadResult.secure_url;
+        }
+
         const newPlan = new Plan({
             name,
             description,
             price,
+            image: imageUrl
         });
-        console.log(newPlan);
+
         await newPlan.save();
         res.json({ success: true, message: 'Plan created successfully' });
     } catch (error) {
