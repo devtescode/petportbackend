@@ -731,32 +731,64 @@ const promoteToAdmin = async (Email) => {
 };
 promoteToAdmin('petport09@gmail.com');
 
+
+// module.exports.Adminlogin = async (req, res) => {
+//     const { Email, password } = req.body;
+//     try {
+//         const user = await Userschema.findOne({ Email });
+//         if (!user) {
+//             return res.json({ message: 'Admin Email not found', status: false });
+//         }
+
+//         if (user.role !== 'admin') {
+//             return res.json({ message: 'Access denied', status: false });
+//         }
+
+//         const isMatch = await user.compareUser(password);
+//         if (!isMatch) {
+//             return res.json({ message: 'Incorrect Password', status: false });
+//         }
+
+//         const admintoken = jwt.sign({ userId: user._id, role: user.role }, adminsecret, { expiresIn: '1h' });
+//         return res.send({ message: 'Login Success', status: true, admintoken });
+//     } catch (error) {
+//         console.error('Error during login:', error);
+//         return res.status(500).send('Internal server error');
+//     }
+// };
+
 module.exports.Adminlogin = async (req, res) => {
     const { Email, password } = req.body;
     try {
+        console.log('Admin login attempt:', Email);
+
         const user = await Userschema.findOne({ Email });
         if (!user) {
+            console.log('Admin Email not found');
             return res.json({ message: 'Admin Email not found', status: false });
         }
 
+        console.log('User found:', user.Email, 'Role:', user.role);
+
         if (user.role !== 'admin') {
+            console.log('Access denied for user:', user.Email);
             return res.json({ message: 'Access denied', status: false });
         }
 
         const isMatch = await user.compareUser(password);
         if (!isMatch) {
+            console.log('Incorrect Password for user:', user.Email);
             return res.json({ message: 'Incorrect Password', status: false });
         }
 
         const admintoken = jwt.sign({ userId: user._id, role: user.role }, adminsecret, { expiresIn: '1h' });
+        console.log('Login Success for admin:', user.Email);
         return res.send({ message: 'Login Success', status: true, admintoken });
     } catch (error) {
         console.error('Error during login:', error);
         return res.status(500).send('Internal server error');
     }
 };
-
-
 
 
 // const authAdmin = (req, res, next) => {
@@ -1074,11 +1106,10 @@ module.exports.getplan = async(req, res) => {
     }
 }
 
-module.exports.planinvestnow =async (req, res) => {
+module.exports.planinvestnow = async (req, res) => {
     const { planId, email } = req.body;
 
     try {
- 
         console.log('Plan ID:', planId);
         console.log('Email:', email);
 
@@ -1092,13 +1123,22 @@ module.exports.planinvestnow =async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
+        // Check if the user's balance is sufficient for the plan price
+        if (user.Balance < plan.price) {
+            return res.status(400).json({ success: false, message: 'Insufficient balance for this investment' });
+        }
+
+        // Deduct the plan price from the user's balance
+        user.Balance -= plan.price;
+
+        // Add the investment to the user's history
         user.history.push({
             productId: planId,
             productName: plan.name,
             productPrice: plan.price
         });
 
-    
+        // Save the user's new investment
         user.investments.push({ planId, investmentDate: new Date() });
         await user.save();
 
@@ -1113,7 +1153,7 @@ module.exports.planinvestnow =async (req, res) => {
             history: user.history
         };
 
-
+        // Send confirmation email to the user
         const mailOptions = {
             from: process.env.USER_EMAIL,
             to: email,
