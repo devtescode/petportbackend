@@ -1078,7 +1078,7 @@ module.exports.planinvestnow =async (req, res) => {
     const { planId, email } = req.body;
 
     try {
-        // Log input data
+ 
         console.log('Plan ID:', planId);
         console.log('Email:', email);
 
@@ -1092,14 +1092,13 @@ module.exports.planinvestnow =async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // Add the investment to the user's history
         user.history.push({
             productId: planId,
             productName: plan.name,
             productPrice: plan.price
         });
 
-        // Save the user's new investment
+    
         user.investments.push({ planId, investmentDate: new Date() });
         await user.save();
 
@@ -1114,7 +1113,7 @@ module.exports.planinvestnow =async (req, res) => {
             history: user.history
         };
 
-        // Send confirmation email to the user
+
         const mailOptions = {
             from: process.env.USER_EMAIL,
             to: email,
@@ -1165,12 +1164,10 @@ module.exports.planinvestnow =async (req, res) => {
 
         const info = await transporter.sendMail(mailOptions);
         console.log('Email sent: ' + info.response);
-
-        // Send the response after email has been sent
         res.json({
             success: true,
             message: 'Investment successfully saved',
-            userData: userData // Return user data if needed
+            userData: userData
         });
         
     } catch (error) {
