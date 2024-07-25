@@ -298,8 +298,6 @@ module.exports.productid = (req, res) => {
 //         res.status(500).send('Internal server error');
 //     }
 // }
-
-
 module.exports.investnow = async (req, res) => {
     const { productId, Email } = req.body;
     try {
@@ -403,6 +401,8 @@ module.exports.investnow = async (req, res) => {
 
     }
 };
+
+
 
 module.exports.changepassword = async (req, res) => {
     jwt.verify(req.body.token, secret, async (err, result) => {
@@ -1071,5 +1071,110 @@ module.exports.getplan = async(req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
+    }
+}
+
+module.exports.planinvestnow =async (req, res) => {
+    const { planId, email } = req.body;
+
+    try {
+        // Log input data
+        console.log('Plan ID:', planId);
+        console.log('Email:', email);
+
+        const plan = await Plan.findById(planId);
+        if (!plan) {
+            return res.status(404).json({ success: false, message: 'Plan not found' });
+        }
+
+        const user = await Userschema.findOne({ Email: email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        // Add the investment to the user's history
+        user.history.push({
+            productId: planId,
+            productName: plan.name,
+            productPrice: plan.price
+        });
+
+        // Save the user's new investment
+        user.investments.push({ planId, investmentDate: new Date() });
+        await user.save();
+
+        const userData = {
+            fullName: user.Fullname,
+            number: user.Number,
+            email: user.Email,
+            products: user.Product,
+            balance: user.Balance,
+            totalInvest: user.Totalinvest,
+            amountInvest: user.Amountinvest,
+            history: user.history
+        };
+
+        // Send confirmation email to the user
+        const mailOptions = {
+            from: process.env.USER_EMAIL,
+            to: email,
+            subject: 'PETPORT Investment Confirmation',
+            html: `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Email</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="width: 100%; max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <tr>
+                            <td align="center">
+                                <h1 style="color: #333333;">PETPORT</h1>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p style="color: #555555;">Hello ${user.Fullname},</p>
+                                <p style="color: #555555;">Your investment in the following plan was successful:</p>
+                                <ul style="color: #555555;">
+                                    <li><strong>Plan ID:</strong> ${plan._id}</li>
+                                    <li><strong>Plan Name:</strong> ${plan.name}</li>
+                                    <li><strong>Plan Price:</strong> ${plan.price}</li>
+                                </ul>
+                                <img src="${plan.image}" alt="${plan.name}" style="width: 100%; max-width: 200px; display: block; margin: 20px auto;">
+                                <p style="color: #555555;">Thank you for your patronage!</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center" style="padding-top: 20px;">
+                                <a href="http://localhost:5173/" style="text-decoration: none; color: #ffffff; background-color: #007bff; padding: 10px 20px; border-radius: 5px; display: inline-block;">Read More</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-top: 20px; color: #777777;">
+                                <p>Best regards,<br>PETPORT Team</p>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent: ' + info.response);
+
+        // Send the response after email has been sent
+        res.json({
+            success: true,
+            message: 'Investment successfully saved',
+            userData: userData // Return user data if needed
+        });
+        
+    } catch (error) {
+        console.error('Error during investment:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 }
