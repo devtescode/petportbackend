@@ -763,6 +763,7 @@ module.exports.Adminlogin = async (req, res) => {
         console.log('Admin login attempt:', Email);
 
         const user = await Userschema.findOne({ Email });
+        console.log(user);
         if (!user) {
             console.log('Admin Email not found');
             return res.json({ message: 'Admin Email not found', status: false });
@@ -1009,21 +1010,7 @@ module.exports.changePasswordAdmin = async (req, res) => {
 };
 
 module.exports.createplan = async (req, res) => {
-    // const { name, description, price } = req.body;
-
-    // try {
-    //     const newPlan = new Plan({
-    //         name,
-    //         description,
-    //         price,
-    //     });
-    //     console.log(newPlan);
-    //     await newPlan.save();
-    //     res.json({ success: true, message: 'Plan created successfully' });
-    // } catch (error) {
-    //     console.error('Error creating plan:', error);
-    //     res.status(500).json({ success: false, message: 'Internal server error' });
-    // }
+ 
     const { name, description, price, file } = req.body;
 
     try {
