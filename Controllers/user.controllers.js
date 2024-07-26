@@ -214,27 +214,74 @@ module.exports.signIn = (req, res) => {
 };
 
 
-module.exports.dashBoard = (req, res) => {
-    let token = req.headers.authorization.split(" ")[1]
-    console.log(token);
-    jwt.verify(token, secret, ((err, result) => {
-        if (err) {
-            res.send({ status: false, message: "wrong token" })
-            console.log(err);
-        }
-        else {
-            Userschema.findOne({ _id: result.id }).then((user) => {
-                res.send({ status: true, message: "Success token correct", user })
-                console.log(user);
+// module.exports.dashBoard = (req, res) => {
+//     let token = req.headers.authorization.split(" ")[1]
+//     console.log(token);
+//     jwt.verify(token, secret, ((err, result) => {
+//         if (err) {
+//             res.send({ status: false, message: "wrong token" })
+//             console.log(err);
+//         }
+//         else {
+//             Userschema.findOne({ _id: result.id }).then((user) => {
+//                 res.send({ status: true, message: "Success token correct", user })
+//                 console.log(user);
+//             })
+//                 .catch((err) => {
+//                     console.log("error Occured", err);
+//                     res.status(500).send({ status: false, message: "Internal server error" });
+//                 })
+//         }
+//     }))
+// }
 
-            })
-                .catch((err) => {
-                    console.log("error Occured", err);
-                    res.status(500).send({ status: false, message: "Internal server error" });
-                })
+module.exports.dashBoard = async (req, res) => {
+    let token = req.headers.authorization.split(" ")[1];
+    try {
+        const decoded = await jwt.verify(token, secret);
+        const user = await Userschema.findById(decoded.id).populate('investments.planId');
+        if (!user) {
+            return res.status(404).send({ status: false, message: "User not found" });
         }
-    }))
-}
+
+        // Calculate total investment
+        const totalInvestment = user.investments.reduce((sum, investment) => {
+            const plan = investment.planId;
+            return sum + (plan ? plan.price : 0);
+        }, 0);
+
+        // Get the number of investments
+        const investmentCount = user.investments.length;
+
+        // Get the number of unique products
+        const uniqueProducts = new Set(user.investments.map(investment => investment.planId._id.toString()));
+        const uniqueProductCount = uniqueProducts.size;
+
+        // Update the user with the new calculated values
+        user.Totalinvest = totalInvestment;
+        user.Amountinvest = investmentCount;
+
+        await user.save();
+
+        // Send the user data along with total investment, investment count, and unique product count
+        res.send({
+            status: true,
+            message: "Success token correct",
+            user: {
+                ...user.toObject(),
+                Totalinvest: user.Totalinvest,
+                Amountinvest: user.Amountinvest,
+                uniqueProductCount
+            }
+        });
+
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send({ status: false, message: "Internal server error" });
+    }
+};
+
+
 
 
 const products = [
@@ -707,7 +754,7 @@ module.exports.getHistory = async (req, res) => {
         console.error("Error fetching investment history", error);
         res.status(500).send('Internal server error');
     }
-}   
+}
 
 module.exports.investperform = (req, res) => {
     res.json(products)
@@ -819,12 +866,12 @@ module.exports.Admindb = (req, res) => {
             console.log(err);
         }
         else {
-            console.log(admintoken);
+            // console.log(admintoken);
             // res.send({ status: true, message: "Valid token" })
             // console.log(result);
             Userschema.findOne({ _id: result.userId }).then((user) => {
                 res.send({ status: true, message: "Valid token", user })
-                // console.log(user);
+                console.log(user);
             })
         }
     }))
@@ -935,36 +982,60 @@ module.exports.totalbalance = async (req, res) => {
 }
 
 module.exports.totalAmountInvested = async (req, res) => {
-    try {
-        const totalAmountInvested = await Userschema.aggregate([
-            {
-                $group: {
-                    _id: null,
-                    totalAmountInvested: { $sum: "$Amountinvest" }
-                }
-            }
-        ]);
+    // try {
+    //     const totalAmountInvested = await Userschema.aggregate([
+    //         {
+    //             $group: {
+    //                 _id: null,
+    //                 totalAmountInvested: { $sum: "$Amountinvest" }
+    //             }
+    //         }
+    //     ]);
 
-        res.json({ totalAmountInvested: totalAmountInvested[0]?.totalAmountInvested || 0 });
+    //     res.json({ totalAmountInvested: totalAmountInvested[0]?.totalAmountInvested || 0 });
+    // } catch (err) {
+    //     res.status(500).json({ message: err.message });
+    // }
+    try {
+        const result = await Userschema.aggregate([
+            { $unwind: "$investments" },
+            { $lookup: { from: "plans", localField: "investments.planId", foreignField: "_id", as: "plan" } },
+            { $unwind: "$plan" },
+            { $group: { _id: null, totalAmountInvested: { $sum: "$plan.price" } } }
+        ]);
+        const totalAmountInvested = result[0]?.totalAmountInvested || 0;
+        res.json({ totalAmountInvested });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error('Error fetching total amount invested:', err);
+        res.status(500).send({ status: false, message: "Internal server error" });
     }
 }
 
 module.exports.Totalinvest = async (req, res) => {
+    // try {
+    //     const totalinvesttogether = await Userschema.aggregate([
+    //         {
+    //             $group: {
+    //                 _id: null,
+    //                 totalinvesttogether: { $sum: "$Totalinvest" }
+    //             }
+    //         }
+    //     ])
+    //     res.json({ totalinvesttogether: totalinvesttogether[0]?.totalinvesttogether || 0 });
+    // }
+    // catch (err) {
+    //     res.status(500).json({ message: err.message });
+    // }
+
     try {
-        const totalinvesttogether = await Userschema.aggregate([
-            {
-                $group: {
-                    _id: null,
-                    totalinvesttogether: { $sum: "$Totalinvest" }
-                }
-            }
-        ])
-        res.json({ totalinvesttogether: totalinvesttogether[0]?.totalinvesttogether || 0 });
-    }
-    catch (err) {
-        res.status(500).json({ message: err.message });
+        const totalInvest = await Userschema.aggregate([
+            { $unwind: "$investments" },
+            { $count: "totalinvesttogether" }
+        ]);
+        res.json({ totalinvesttogether: totalInvest[0]?.totalinvesttogether || 0 });
+    } catch (err) {
+        console.error('Error fetching total investments:', err);
+        res.status(500).send({ status: false, message: "Internal server error" });
     }
 }
 
@@ -1010,7 +1081,7 @@ module.exports.changePasswordAdmin = async (req, res) => {
 };
 
 module.exports.createplan = async (req, res) => {
- 
+
     const { name, description, price, file } = req.body;
 
     try {
@@ -1054,9 +1125,9 @@ module.exports.adminplansdelect = async (req, res) => {
         if (!plan) {
             return res.status(404).json({ success: false, message: 'Plan not found' });
         }
-        else {  
+        else {
             await Plan.findByIdAndDelete(req.params.id);
-            res.json({ success: true, message: 'Plan deleted successfully' });  
+            res.json({ success: true, message: 'Plan deleted successfully' });
         }
     } catch (err) {
         console.error(err.message);
@@ -1064,7 +1135,7 @@ module.exports.adminplansdelect = async (req, res) => {
     }
 }
 
-module.exports.updateplan = async (req, res)=>{
+module.exports.updateplan = async (req, res) => {
     try {
         const { id } = req.params;
         const updatedPlan = await Plan.findByIdAndUpdate(id, req.body, { new: true });
@@ -1080,7 +1151,7 @@ module.exports.updateplan = async (req, res)=>{
     }
 }
 
-module.exports.getplan = async(req, res) => {
+module.exports.getplan = async (req, res) => {
     try {
         const plan = await Plan.findById(req.params.id);
         if (!plan) {
