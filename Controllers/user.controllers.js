@@ -700,14 +700,14 @@ module.exports.getHistory = async (req, res) => {
             console.log("User not found");
             return res.status(404).send('User not found');
         }
-        console.log("User Foun  d", user.history);
+        console.log("User Found", user.history);
         const history = user.history
         res.send({ message: 'History found', history });
     } catch (error) {
         console.error("Error fetching investment history", error);
         res.status(500).send('Internal server error');
     }
-}
+}   
 
 module.exports.investperform = (req, res) => {
     res.json(products)
@@ -1094,7 +1094,7 @@ module.exports.getplan = async(req, res) => {
 }
 
 module.exports.planinvestnow = async (req, res) => {
-    const { planId, email } = req.body;
+    const { planId, email, productImage } = req.body;
 
     try {
         console.log('Plan ID:', planId);
@@ -1122,7 +1122,8 @@ module.exports.planinvestnow = async (req, res) => {
         user.history.push({
             productId: planId,
             productName: plan.name,
-            productPrice: plan.price
+            productPrice: plan.price,
+            productImage: productImage
         });
 
         // Save the user's new investment
@@ -1196,7 +1197,7 @@ module.exports.planinvestnow = async (req, res) => {
             message: 'Investment successfully saved',
             userData: userData
         });
-        
+
     } catch (error) {
         console.error('Error during investment:', error);
         res.status(500).json({ success: false, message: 'Server error' });

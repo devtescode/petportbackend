@@ -6,7 +6,8 @@
     productId: String,
     productName: String,
     productPrice: String,
-    investmentDate: { type: Date, default: Date.now }
+    investmentDate: { type: Date, default: Date.now },
+    productImage: { type: String,  required: false } 
   });
 
 
