@@ -236,10 +236,16 @@ module.exports.signIn = (req, res) => {
 // }
 
 module.exports.dashBoard = async (req, res) => {
-    let token = req.headers.authorization.split(" ")[1];
+    const token = req.headers.authorization && req.headers.authorization.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).send({ status: false, message: "Authorization token missing" });
+    }
+
     try {
         const decoded = await jwt.verify(token, secret);
         const user = await Userschema.findById(decoded.id).populate('investments.planId');
+
         if (!user) {
             return res.status(404).send({ status: false, message: "User not found" });
         }
@@ -254,7 +260,8 @@ module.exports.dashBoard = async (req, res) => {
         const investmentCount = user.investments.length;
 
         // Get the number of unique products
-        const uniqueProducts = new Set(user.investments.map(investment => investment.planId._id.toString()));
+        const uniqueProducts = new Set(user.investments.map(investment => investment.planId ? investment.planId._id.toString() : null));
+        uniqueProducts.delete(null); // Remove any null values that may have been added
         const uniqueProductCount = uniqueProducts.size;
 
         // Update the user with the new calculated values
@@ -277,9 +284,14 @@ module.exports.dashBoard = async (req, res) => {
 
     } catch (err) {
         console.error("Error:", err);
-        res.status(500).send({ status: false, message: "Internal server error" });
+        if (err.name === 'JsonWebTokenError') {
+            res.status(401).send({ status: false, message: "Invalid token" });
+        } else {
+            res.status(500).send({ status: false, message: "Internal server error" });
+        }
     }
 };
+
 
 
 
@@ -1082,7 +1094,7 @@ module.exports.changePasswordAdmin = async (req, res) => {
 
 module.exports.createplan = async (req, res) => {
 
-    const { name, description, price, file } = req.body;
+    const { name, description, price, file, investmentPeriods } = req.body;
 
     try {
         let imageUrl = '';
@@ -1095,9 +1107,10 @@ module.exports.createplan = async (req, res) => {
             name,
             description,
             price,
-            image: imageUrl
+            image: imageUrl,
+            investmentPeriods
         });
-
+        console.log(newPlan);
         await newPlan.save();
         res.json({ success: true, message: 'Plan created successfully' });
     } catch (error) {
@@ -1165,11 +1178,12 @@ module.exports.getplan = async (req, res) => {
 }
 
 module.exports.planinvestnow = async (req, res) => {
-    const { planId, email, productImage } = req.body;
+    const { planId, email, productImage, investmentPeriod } = req.body; // Include investmentPeriod
 
     try {
         console.log('Plan ID:', planId);
         console.log('Email:', email);
+        console.log('Investment Period:', investmentPeriod); // Log the investment period
 
         const plan = await Plan.findById(planId);
         if (!plan) {
@@ -1194,11 +1208,16 @@ module.exports.planinvestnow = async (req, res) => {
             productId: planId,
             productName: plan.name,
             productPrice: plan.price,
-            productImage: productImage
+            productImage: productImage,
+            investmentPeriod: investmentPeriod // Save the investment period
         });
 
-        // Save the user's new investment
-        user.investments.push({ planId, investmentDate: new Date() });
+        // Add the investment to the user's investments
+        user.investments.push({ 
+            planId, 
+            investmentDate: new Date(),
+            investmentPeriod: investmentPeriod // Save the investment period here as well
+        });
         await user.save();
 
         const userData = {
@@ -1240,6 +1259,7 @@ module.exports.planinvestnow = async (req, res) => {
                                     <li><strong>Plan ID:</strong> ${plan._id}</li>
                                     <li><strong>Plan Name:</strong> ${plan.name}</li>
                                     <li><strong>Plan Price:</strong> ${plan.price}</li>
+                                    <li><strong>Investment Period:</strong> ${investmentPeriod}</li> <!-- Include investment period -->
                                 </ul>
                                 <img src="${plan.image}" alt="${plan.name}" style="width: 100%; max-width: 200px; display: block; margin: 20px auto;">
                                 <p style="color: #555555;">Thank you for your patronage!</p>
