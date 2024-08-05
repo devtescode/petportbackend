@@ -8,9 +8,9 @@ const investmentSchema = new mongoose.Schema({
   productPrice: String,
   investmentDate: { type: Date, default: Date.now },
   productImage: { type: String, required: false },
-  investmentPeriod: { type: String, required: false }  // Add this line
+  investmentPeriod: { type: String, required: false },  // Add this line
+  investmentPrice: { type: String, required: false }  // Add this line
 });
-
 
 const PlanSchema = new mongoose.Schema({
   name: { type: String, required: true },

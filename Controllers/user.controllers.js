@@ -1178,12 +1178,13 @@ module.exports.getplan = async (req, res) => {
 }
 
 module.exports.planinvestnow = async (req, res) => {
-    const { planId, email, productImage, investmentPeriod } = req.body; // Include investmentPeriod
+    const { planId, email, productImage, investmentPeriod, investmentPrice } = req.body; // Include investmentPeriod
 
     try {
         console.log('Plan ID:', planId);
         console.log('Email:', email);
         console.log('Investment Period:', investmentPeriod); // Log the investment period
+        console.log('Investment Price:', investmentPrice); // Log the investment period
 
         const plan = await Plan.findById(planId);
         if (!plan) {
@@ -1195,28 +1196,30 @@ module.exports.planinvestnow = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // Check if the user's balance is sufficient for the plan price
+   
         if (user.Balance < plan.price) {
             return res.status(400).json({ success: false, message: 'Insufficient balance for this investment' });
         }
 
-        // Deduct the plan price from the user's balance
+      
         user.Balance -= plan.price;
 
-        // Add the investment to the user's history
+  
         user.history.push({
             productId: planId,
             productName: plan.name,
             productPrice: plan.price,
             productImage: productImage,
-            investmentPeriod: investmentPeriod // Save the investment period
+            investmentPeriod: investmentPeriod,
+            investmentPrice: investmentPrice
         });
 
-        // Add the investment to the user's investments
+ 
         user.investments.push({ 
             planId, 
             investmentDate: new Date(),
-            investmentPeriod: investmentPeriod // Save the investment period here as well
+            investmentPeriod: investmentPeriod,
+            investmentPrice: investmentPrice
         });
         await user.save();
 
@@ -1231,7 +1234,7 @@ module.exports.planinvestnow = async (req, res) => {
             history: user.history
         };
 
-        // Send confirmation email to the user
+        
         const mailOptions = {
             from: process.env.USER_EMAIL,
             to: email,
@@ -1259,7 +1262,8 @@ module.exports.planinvestnow = async (req, res) => {
                                     <li><strong>Plan ID:</strong> ${plan._id}</li>
                                     <li><strong>Plan Name:</strong> ${plan.name}</li>
                                     <li><strong>Plan Price:</strong> ${plan.price}</li>
-                                    <li><strong>Investment Period:</strong> ${investmentPeriod}</li> <!-- Include investment period -->
+                                    <li><strong>Investment Period:</strong> ${investmentPeriod}</li> 
+                                    <li><strong>Amount To Earn:</strong> ${investmentPrice}</li> 
                                 </ul>
                                 <img src="${plan.image}" alt="${plan.name}" style="width: 100%; max-width: 200px; display: block; margin: 20px auto;">
                                 <p style="color: #555555;">Thank you for your patronage!</p>
