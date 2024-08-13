@@ -1,4 +1,4 @@
-const { Userschema, Plan } = require("../Models/user.models")
+const { Userschema, Plan, Notification } = require("../Models/user.models")
 const nodemailer = require("nodemailer")
 const jwt = require("jsonwebtoken")
 const axios = require("axios")
@@ -11,6 +11,8 @@ const cloudinary = require("cloudinary")
 const adminsecret = process.env.ADMIN_SECRET
 const bcrypt = require("bcrypt")
 const { v4: uuidv4 } = require('uuid');
+const mongoose = require("mongoose")
+
 env.config()
 
 var transporter = nodemailer.createTransport({
@@ -153,7 +155,7 @@ module.exports.signIn = (req, res) => {
                     codetoken: user.Codetoken,
                     TokenGenerationAttempts: user.tokenGenerationAttempts,
                     FirstAttemptTimestamp: user.firstAttemptTimestamp,
-                    History: user.history
+                    History: user.history,
                 }
                 res.status(200).json({ message: "Login Success", status: true, token, userData })
                 // console.log("user success", userData)
@@ -1196,15 +1198,15 @@ module.exports.planinvestnow = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-   
+
         if (user.Balance < plan.price) {
             return res.status(400).json({ success: false, message: 'Insufficient balance for this investment' });
         }
 
-      
+
         user.Balance -= plan.price;
 
-  
+
         user.history.push({
             productId: planId,
             productName: plan.name,
@@ -1214,9 +1216,9 @@ module.exports.planinvestnow = async (req, res) => {
             investmentPrice: investmentPrice
         });
 
- 
-        user.investments.push({ 
-            planId, 
+
+        user.investments.push({
+            planId,
             investmentDate: new Date(),
             investmentPeriod: investmentPeriod,
             investmentPrice: investmentPrice
@@ -1234,7 +1236,7 @@ module.exports.planinvestnow = async (req, res) => {
             history: user.history
         };
 
-        
+
         const mailOptions = {
             from: process.env.USER_EMAIL,
             to: email,
@@ -1296,5 +1298,88 @@ module.exports.planinvestnow = async (req, res) => {
     } catch (error) {
         console.error('Error during investment:', error);
         res.status(500).json({ success: false, message: 'Server error' });
+    }
+}
+
+
+module.exports.adnotification = async (req, res) => {
+    console.log(req.body);
+    try {
+        const { message, userId } = req.body;
+
+        if (userId === 'all') {
+            // Fetch all users
+            const users = await Userschema.find({});
+
+            // Create a notification for each user
+            const notifications = await Promise.all(users.map(user => {
+                const newNotification = new Notification({
+                    message,
+                    userId: user._id
+                });
+                return newNotification.save();
+            }));
+
+            res.status(201).json({ message: 'Notification sent to all users', notifications });
+        } else {
+            // Send notification to a specific user
+            const newNotification = new Notification({
+                message,
+                userId
+            });
+
+            await newNotification.save();
+            res.status(201).json(newNotification);
+        }
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error" });
+    }
+}
+
+// module.exports.getusernotification = async (req, res) => {
+//     try {
+//       const { userId } = req.params;
+
+//       // Initialize query to handle all-user notifications
+//       let query = { isForAll: true };
+
+//       // If userId is provided, update the query to also include user-specific notifications
+//       if (mongoose.Types.ObjectId.isValid(userId)) {
+//         query = {
+//           $or: [
+//             { userId: mongoose.Types.ObjectId(userId) },  // User-specific notifications
+//             { isForAll: true }  // All-user notifications
+//           ]
+//         };
+//       }
+
+//       const notifications = await Notification.find(query);
+//       console.log(notifications);
+//       res.status(200).json(notifications);
+//     } catch (err) {
+//       console.error(err.message);
+//       res.status(500).json({ error: "Server error" });
+//     }
+//   };
+
+module.exports.getusernotification = async (req, res) => {
+    try {
+        const notifications = await Notification.find().sort({ createdAt: -1 }); 
+        res.status(200).json({ notification: notifications });
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).json({ error: 'Failed to fetch notifications' });
+    }
+};
+
+module.exports.fetchUsersNotifications = async (req, res) => {
+    try {
+        const users = await Userschema.find({}, '_id Email Fullname');
+        res.status(200).json(users);
+        console.log(users);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error" });
     }
 }

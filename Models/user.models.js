@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+
 const bcrypt = require("bcrypt")
 
 
@@ -57,6 +58,20 @@ let schema = mongoose.Schema({
 }, { timestamps: true })
 
 
+// const NotificationSchema = new mongoose.Schema({
+//   message: { type: String, required: true },
+//   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+//   isRead: { type: Boolean, default: false },
+//   createdAt: { type: Date, default: Date.now }
+// });
+
+
+const NotificationSchema = new mongoose.Schema({
+  userId: { type: String, required: true }, // "all" for all users or specific user ID
+  message: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
 
 
 // let saltRound = 10
@@ -104,7 +119,7 @@ schema.methods.compareUser = async function (userPass) {
   }
 }
 
-
+const Notification = mongoose.model('Notification', NotificationSchema);
 const Userschema = mongoose.model("useranimalinvest", schema)
 const Plan = mongoose.model("Plan", PlanSchema);
-module.exports = { Userschema, Plan }
+module.exports = { Userschema, Plan, Notification}
