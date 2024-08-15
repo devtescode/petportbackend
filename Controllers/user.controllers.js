@@ -1443,14 +1443,16 @@ module.exports.addcomment = async (req, res) =>{
 
 module.exports.getcomments = async (req, res) => {
     try {
-        console.log('Fetching comments for planId:', req.params.id);
+        // console.log('Fetching comments for planId:', req.params.id);
         const comments   = await Comment.find({ planId: req.params.id })
             .populate('userId', 'Fullname Email')   
             .exec();
 
         res.status(200).json({ comments });
-        console.log(comments);
-        
+        console.log("Console Comments", comments);
+        comments.forEach(comment => {
+            console.log("My name",comment.userId.Fullname); // Logs the Fullname (first name) of the user
+        });
     } catch (error) {
         console.error('Error fetching comments:', error);
         res.status(500).json({ message: 'Error fetching comments' });
