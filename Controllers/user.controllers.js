@@ -1338,50 +1338,31 @@ module.exports.adnotification = async (req, res) => {
     }
 }
 
-// module.exports.getusernotification = async (req, res) => {
-//     try {
-//       const { userId } = req.params;
 
-//       // Initialize query to handle all-user notifications
-//       let query = { isForAll: true };
 
-//       // If userId is provided, update the query to also include user-specific notifications
-//       if (mongoose.Types.ObjectId.isValid(userId)) {
-//         query = {
-//           $or: [
-//             { userId: mongoose.Types.ObjectId(userId) },  // User-specific notifications
-//             { isForAll: true }  // All-user notifications
-//           ]
-//         };
-//       }
+    module.exports.getusernotification = async (req, res) => {
+        console.log(req.body);
+        
+        try {
+            const { userId } = req.query; // Assume userId is passed as a query parameter
+            let notifications;
 
-//       const notifications = await Notification.find(query);
-//       console.log(notifications);
-//       res.status(200).json(notifications);
-//     } catch (err) {
-//       console.error(err.message);
-//       res.status(500).json({ error: "Server error" });
-//     }
-//   };
+            if (userId === 'all') {
+                notifications = await Notification.find(); // Fetch all notifications
+            } else {
+                notifications = await Notification.find({
+                    $or: [{ userId: userId }, { userId: 'all' }]
+                });
+            }
 
-module.exports.getusernotification = async (req, res) => {
-    // const userId = req.user.id; // Replace with actual logic to get user ID
-
-    // try {
-    //     // Fetch notifications either for the specific user or for all users
-    //     const notifications = await Notification.find({
-    //         $or: [
-    //             { userId: 'all' }, // Notifications for all users
-    //             { userId: userId }  // Notifications specific to the logged-in user
-    //         ]
-    //     }).sort({ createdAt: -1 }); // Sort by most recent
-
-    //     res.status(200).json(notifications);
-    // } catch (error) {
-    //     console.error('Error fetching notifications:', error);
-    //     res.status(500).json({ success: false, message: 'Failed to fetch notifications' });
-    // }
-};
+            res.status(200).json({ notification: notifications });
+            console.log("Fetched Notifications:", notifications);
+            
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    };
 
 module.exports.fetchUsersNotifications = async (req, res) => {
     try {

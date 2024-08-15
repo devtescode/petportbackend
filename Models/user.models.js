@@ -84,7 +84,11 @@ const commentSchema = new mongoose.Schema({
 
 
 const NotificationSchema = new mongoose.Schema({
-  userId: { type: String, required: true }, // "all" for all users or specific user ID
+  // userId: { type: String, required: true }, // "all" for all users or specific user ID
+  userId: {
+    type: String,
+    default: 'all', // 'all' means the notification is for all users
+},
   message: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
 });
