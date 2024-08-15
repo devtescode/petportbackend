@@ -1444,8 +1444,8 @@ module.exports.addcomment = async (req, res) =>{
 module.exports.getcomments = async (req, res) => {
     try {
         console.log('Fetching comments for planId:', req.params.id);
-        const comments = await Comment.find({ planId: req.params.id })
-            .populate('userId', 'Fullname Email')
+        const comments   = await Comment.find({ planId: req.params.id })
+            .populate('userId', 'Fullname Email')   
             .exec();
 
         res.status(200).json({ comments });
