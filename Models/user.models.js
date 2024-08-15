@@ -67,6 +67,14 @@ let schema = mongoose.Schema({
 }, { timestamps: true })
 
 
+
+const commentSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'useranimalinvest', required: true },
+  planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true },
+  commentText: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
 // const NotificationSchema = new mongoose.Schema({
 //   message: { type: String, required: true },
 //   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -131,4 +139,5 @@ schema.methods.compareUser = async function (userPass) {
 const Notification = mongoose.model('Notification', NotificationSchema);
 const Userschema = mongoose.model("useranimalinvest", schema)
 const Plan = mongoose.model("Plan", PlanSchema);
-module.exports = { Userschema, Plan, Notification }
+const Comment = mongoose.model('Comment', commentSchema);
+module.exports = { Userschema, Plan, Notification, Comment }

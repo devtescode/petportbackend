@@ -1,4 +1,4 @@
-const { Userschema, Plan, Notification } = require("../Models/user.models")
+const { Userschema, Plan, Notification, Comment } = require("../Models/user.models")
 const nodemailer = require("nodemailer")
 const jwt = require("jsonwebtoken")
 const axios = require("axios")
@@ -1123,7 +1123,7 @@ module.exports.createplan = async (req, res) => {
 }
 
 
-module.exports.getuserplans = async (req, res) => {
+module.exports. getuserplans = async (req, res) => {
     try {
         const plans = await Plan.find();
         // console.log(plans);
@@ -1418,8 +1418,41 @@ module.exports.likeplan = async (req, res)=>{
         });
 
         console.log("Like count",plan.likesCount);
+        console.log("Plan likes", plan.likes);
+        
         
     } catch (error) {
         res.status(500).json({ error: 'An error occurred while liking/unliking the plan.' });
+    }
+}
+
+
+module.exports.addcomment = async (req, res) =>{
+    const { userId, planId, commentText } = req.body;
+
+    try {
+        const comment = new Comment({ userId, planId, commentText });
+        await comment.save();
+        console.log(comment);
+        
+        res.status(200).json({ message: 'Comment added successfully', comment });
+    } catch (error) {
+        res.status(500).json({ message: 'Error adding comment', error });
+    }
+}
+
+module.exports.getcomments = async (req, res) => {
+    try {
+        console.log('Fetching comments for planId:', req.params.id);
+        const comments = await Comment.find({ planId: req.params.id })
+            .populate('userId', 'Fullname Email')
+            .exec();
+
+        res.status(200).json({ comments });
+        console.log(comments);
+        
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        res.status(500).json({ message: 'Error fetching comments' });
     }
 }
