@@ -32,6 +32,15 @@ const PlanSchema = new mongoose.Schema({
       required: true,
     },
   },
+  likes: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'User', // assuming you have a User model
+    default: [], // initialize as an empty array
+  },
+  likesCount: {
+    type: Number,
+    default: 0,
+  },
 }, { timestamps: true });
 
 let schema = mongoose.Schema({
@@ -122,4 +131,4 @@ schema.methods.compareUser = async function (userPass) {
 const Notification = mongoose.model('Notification', NotificationSchema);
 const Userschema = mongoose.model("useranimalinvest", schema)
 const Plan = mongoose.model("Plan", PlanSchema);
-module.exports = { Userschema, Plan, Notification}
+module.exports = { Userschema, Plan, Notification }

@@ -1,5 +1,5 @@
 const express = require('express');
-const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, getHistory, investperform, Adminlogin, Admindb, getall, putall, postall, delecteach, getuseranimalinvest, totalbalance, totalAmountInvested, Totalinvest, changePasswordAdmin, createplan, getuserplans, adminplansdelect, updateplan, getplan, planinvestnow, adnotification, getusernotification, fetchUsersNotifications,} = require('../Controllers/user.controllers');
+const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, getHistory, investperform, Adminlogin, Admindb, getall, putall, postall, delecteach, getuseranimalinvest, totalbalance, totalAmountInvested, Totalinvest, changePasswordAdmin, createplan, getuserplans, adminplansdelect, updateplan, getplan, planinvestnow, adnotification, getusernotification, fetchUsersNotifications, likeplan,} = require('../Controllers/user.controllers');
 const router = express.Router()
 
 
@@ -37,4 +37,5 @@ router.post("/planinvestnow", planinvestnow)
 router.post("/adnotification", adnotification)
 router.get("/getusernotification", getusernotification)
 router.get("/fetchUsersNotifications", fetchUsersNotifications)
+router.post("/likeplan", likeplan)
 module.exports = router

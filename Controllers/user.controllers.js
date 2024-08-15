@@ -144,6 +144,7 @@ module.exports.signIn = (req, res) => {
             else {
                 let token = jwt.sign({ id: user.id }, secret, { expiresIn: "24h" })
                 const userData = {
+                    userId: user.id,
                     fullName: user.Fullname,
                     number: user.Number,
                     email: user.Email,
@@ -1125,7 +1126,7 @@ module.exports.createplan = async (req, res) => {
 module.exports.getuserplans = async (req, res) => {
     try {
         const plans = await Plan.find();
-        console.log(plans);
+        // console.log(plans);
         res.json({ success: true, message: 'Plan get successfully', plans });
     } catch (error) {
         console.error('Error fetching plans:', error);
@@ -1364,13 +1365,22 @@ module.exports.adnotification = async (req, res) => {
 //   };
 
 module.exports.getusernotification = async (req, res) => {
-    try {
-        const notifications = await Notification.find().sort({ createdAt: -1 }); 
-        res.status(200).json({ notification: notifications });
-    } catch (error) {
-        console.error('Error fetching notifications:', error);
-        res.status(500).json({ error: 'Failed to fetch notifications' });
-    }
+    // const userId = req.user.id; // Replace with actual logic to get user ID
+
+    // try {
+    //     // Fetch notifications either for the specific user or for all users
+    //     const notifications = await Notification.find({
+    //         $or: [
+    //             { userId: 'all' }, // Notifications for all users
+    //             { userId: userId }  // Notifications specific to the logged-in user
+    //         ]
+    //     }).sort({ createdAt: -1 }); // Sort by most recent
+
+    //     res.status(200).json(notifications);
+    // } catch (error) {
+    //     console.error('Error fetching notifications:', error);
+    //     res.status(500).json({ success: false, message: 'Failed to fetch notifications' });
+    // }
 };
 
 module.exports.fetchUsersNotifications = async (req, res) => {
@@ -1381,5 +1391,35 @@ module.exports.fetchUsersNotifications = async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: "Server error" });
+    }
+}
+
+module.exports.likeplan = async (req, res)=>{
+    const { userId, planId } = req.body;
+    
+    try {
+        const plan = await Plan.findById(planId);
+
+        const hasLiked = plan.likes.includes(userId);
+
+        if (hasLiked) {
+            plan.likes = plan.likes.filter(id => id.toString() !== userId.toString());
+            plan.likesCount -= 1;
+        } else {
+            plan.likes.push(userId);
+            plan.likesCount += 1;
+        }
+
+        await plan.save();
+
+        res.status(200).json({
+            likes: plan.likes,
+            likesCount: plan.likesCount,
+        });
+
+        console.log("Like count",plan.likesCount);
+        
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while liking/unliking the plan.' });
     }
 }
