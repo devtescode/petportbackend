@@ -1460,3 +1460,21 @@ module.exports.getcomments = async (req, res) => {
         res.status(500).json({ message: 'Error fetching comments' });
     }
 }
+
+module.exports.getusernotificationcount = async (req, res) => {
+    const userId = req.query.userId; // Adjust according to your auth logic
+
+    try {
+        const count = await Notification.countDocuments({
+            userId: { $in: ['all', userId] },
+            read: false, // Assuming you have a field that marks notifications as read/unread
+        });
+
+        res.status(200).json({ count });
+        console.log("Notification count", count);
+        
+    } catch (error) {
+        console.error('Error fetching notification count:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch notification count' });
+    }
+}

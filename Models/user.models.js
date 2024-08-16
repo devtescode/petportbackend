@@ -88,8 +88,12 @@ const NotificationSchema = new mongoose.Schema({
   userId: {
     type: String,
     default: 'all', // 'all' means the notification is for all users
-},
+  },
   message: { type: String, required: true },
+  read: {
+    type: Boolean,
+    default: false, // Default to unread
+  },
   createdAt: { type: Date, default: Date.now }
 });
 
