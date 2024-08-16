@@ -1325,7 +1325,7 @@ module.exports.adnotification = async (req, res) => {
             });
 
             await newNotification.save();
-            res.status(201).json({ message: 'Notification sent to user', notification: newNotification });
+            res.status(201  ).json({ message: 'Notification sent to user', notification: newNotification });
         }
     } catch (err) {
         console.error(err.message);
