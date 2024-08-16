@@ -1123,7 +1123,7 @@ module.exports.createplan = async (req, res) => {
 }
 
 
-module.exports. getuserplans = async (req, res) => {
+module.exports.getuserplans = async (req, res) => {
     try {
         const plans = await Plan.find();
         // console.log(plans);
@@ -1309,19 +1309,14 @@ module.exports.adnotification = async (req, res) => {
         const { message, userId } = req.body;
 
         if (userId === 'all') {
-            // Fetch all users
-            const users = await Userschema.find({});
+            // Create a single notification for all users
+            const newNotification = new Notification({
+                message,
+                userId: 'all' // Set userId to 'all'
+            });
 
-            // Create a notification for each user
-            const notifications = await Promise.all(users.map(user => {
-                const newNotification = new Notification({
-                    message,
-                    userId: user._id
-                });
-                return newNotification.save();
-            }));
-
-            res.status(201).json({ message: 'Notification sent to all users', notifications });
+            await newNotification.save();
+            res.status(201).json({ message: 'Notification sent to all users', notification: newNotification });
         } else {
             // Send notification to a specific user
             const newNotification = new Notification({
@@ -1330,39 +1325,40 @@ module.exports.adnotification = async (req, res) => {
             });
 
             await newNotification.save();
-            res.status(201).json(newNotification);
+            res.status(201).json({ message: 'Notification sent to user', notification: newNotification });
         }
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: "Server error" });
     }
-}
+};
 
 
 
-    module.exports.getusernotification = async (req, res) => {
-        console.log(req.body);
-        
-        try {
-            const { userId } = req.query; // Assume userId is passed as a query parameter
-            let notifications;
 
-            if (userId === 'all') {
-                notifications = await Notification.find(); // Fetch all notifications
-            } else {
-                notifications = await Notification.find({
-                    $or: [{ userId: userId }, { userId: 'all' }]
-                });
-            }
+module.exports.getusernotification = async (req, res) => {
+    console.log(req.body);
 
-            res.status(200).json({ notification: notifications });
-            console.log("Fetched Notifications:", notifications);
-            
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-            res.status(500).json({ error: 'Internal Server Error' });
+    try {
+        const { userId } = req.query;
+        let notifications;
+
+        if (userId === 'all') {
+            notifications = await Notification.find(); // Fetch all notifications
+        } else {
+            notifications = await Notification.find({
+                $or: [{ userId: userId }, { userId: 'all' }]
+            });
         }
-    };
+
+        res.status(200).json({ notification: notifications });
+        console.log("Fetched Notifications:", notifications);
+
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
 
 module.exports.fetchUsersNotifications = async (req, res) => {
     try {
@@ -1375,9 +1371,34 @@ module.exports.fetchUsersNotifications = async (req, res) => {
     }
 }
 
-module.exports.likeplan = async (req, res)=>{
+module.exports.getAllNotifications = async (req, res) => {
+    try {
+        const notifications = await Notification.find();
+        res.status(200).json({ notifications });
+        console.log(notifications);
+
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+module.exports.deleteNotification = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Notification.findByIdAndDelete(id);
+        res.status(200).json({ message: 'Notification deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting notification:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
+
+module.exports.likeplan = async (req, res) => {
     const { userId, planId } = req.body;
-    
+
     try {
         const plan = await Plan.findById(planId);
 
@@ -1398,24 +1419,24 @@ module.exports.likeplan = async (req, res)=>{
             likesCount: plan.likesCount,
         });
 
-        console.log("Like count",plan.likesCount);
+        console.log("Like count", plan.likesCount);
         console.log("Plan likes", plan.likes);
-        
-        
+
+
     } catch (error) {
         res.status(500).json({ error: 'An error occurred while liking/unliking the plan.' });
     }
 }
 
 
-module.exports.addcomment = async (req, res) =>{
+module.exports.addcomment = async (req, res) => {
     const { userId, planId, commentText } = req.body;
 
     try {
         const comment = new Comment({ userId, planId, commentText });
         await comment.save();
         console.log(comment);
-        
+
         res.status(200).json({ message: 'Comment added successfully', comment });
     } catch (error) {
         res.status(500).json({ message: 'Error adding comment', error });
@@ -1425,8 +1446,8 @@ module.exports.addcomment = async (req, res) =>{
 module.exports.getcomments = async (req, res) => {
     try {
         // console.log('Fetching comments for planId:', req.params.id);
-        const comments   = await Comment.find({ planId: req.params.id })
-            .populate('userId', 'Fullname Email Uploadimg')   
+        const comments = await Comment.find({ planId: req.params.id })
+            .populate('userId', 'Fullname Email Uploadimg')
             .exec();
 
         res.status(200).json({ comments });
