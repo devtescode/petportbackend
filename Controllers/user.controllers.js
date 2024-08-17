@@ -1481,7 +1481,7 @@ module.exports.getusernotificationcount = async (req, res) => {
 
 module.exports.testdashboard = async(req, res)=>{
     try {
-        const data = await Userschema   .find(); 
+        const data = await Userschema.find(); 
         res.json(data); 
         console.log(data);
         
