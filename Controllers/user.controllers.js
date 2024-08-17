@@ -1478,3 +1478,14 @@ module.exports.getusernotificationcount = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to fetch notification count' });
     }
 }
+
+module.exports.testdashboard = async(req, res)=>{
+    try {
+        const data = await Userschema   .find(); 
+        res.json(data); 
+        console.log(data);
+        
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch data' });
+      }
+}

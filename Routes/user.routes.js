@@ -1,5 +1,5 @@
 const express = require('express');
-const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, getHistory, investperform, Adminlogin, Admindb, getall, putall, postall, delecteach, getuseranimalinvest, totalbalance, totalAmountInvested, Totalinvest, changePasswordAdmin, createplan, getuserplans, adminplansdelect, updateplan, getplan, planinvestnow, adnotification, getusernotification, fetchUsersNotifications, likeplan, addcomment, getcomments, getAllNotifications, deleteNotification, getusernotificationcount,} = require('../Controllers/user.controllers');
+const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, getHistory, investperform, Adminlogin, Admindb, getall, putall, postall, delecteach, getuseranimalinvest, totalbalance, totalAmountInvested, Totalinvest, changePasswordAdmin, createplan, getuserplans, adminplansdelect, updateplan, getplan, planinvestnow, adnotification, getusernotification, fetchUsersNotifications, likeplan, addcomment, getcomments, getAllNotifications, deleteNotification, getusernotificationcount, testdashboard,} = require('../Controllers/user.controllers');
 const router = express.Router()
 
 
@@ -43,4 +43,5 @@ router.get("/getcomments/:id", getcomments)
 router.get("/getAllNotifications", getAllNotifications)
 router.delete("/deleteNotification/:id", deleteNotification)
 router.get("/getusernotificationcount", getusernotificationcount)
+router.get("/testdb", testdashboard)
 module.exports = router
