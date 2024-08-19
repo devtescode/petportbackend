@@ -41,6 +41,10 @@ const PlanSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  commentCount: {
+    type: Number, 
+    default: 0
+  },
 }, { timestamps: true });
 
 let schema = mongoose.Schema({

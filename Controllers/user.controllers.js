@@ -1435,31 +1435,36 @@ module.exports.addcomment = async (req, res) => {
     try {
         const comment = new Comment({ userId, planId, commentText });
         await comment.save();
-        console.log(comment);
 
-        res.status(200).json({ message: 'Comment added successfully', comment });
+        // Get the updated comment count
+        const commentCount = await Comment.countDocuments({ planId });
+
+        res.status(200).json({ 
+            message: 'Comment added successfully', 
+            comment,
+            commentCount  // Return the updated count
+        });
     } catch (error) {
         res.status(500).json({ message: 'Error adding comment', error });
     }
-}
+};
 
 module.exports.getcomments = async (req, res) => {
     try {
-        // console.log('Fetching comments for planId:', req.params.id);
         const comments = await Comment.find({ planId: req.params.id })
             .populate('userId', 'Fullname Email Uploadimg')
             .exec();
 
-        res.status(200).json({ comments });
-        // console.log("Console Comments", comments);
-        // comments.forEach(comment => {
-        //     console.log("My  ",comment.userId.Uploadimg);   
-        // });
+        // Get the comment count
+        const commentCount = comments.length;
+
+        res.status(200).json({ comments, commentCount });
     } catch (error) {
         console.error('Error fetching comments:', error);
         res.status(500).json({ message: 'Error fetching comments' });
     }
-}
+};
+
 
 module.exports.getusernotificationcount = async (req, res) => {
     const userId = req.query.userId; // Adjust according to your auth logic
