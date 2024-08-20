@@ -1325,7 +1325,7 @@ module.exports.adnotification = async (req, res) => {
             });
 
             await newNotification.save();
-            res.status(201  ).json({ message: 'Notification sent to user', notification: newNotification });
+            res.status(201).json({ message: 'Notification sent to user', notification: newNotification });
         }
     } catch (err) {
         console.error(err.message);
@@ -1439,8 +1439,8 @@ module.exports.addcomment = async (req, res) => {
         // Get the updated comment count
         const commentCount = await Comment.countDocuments({ planId });
 
-        res.status(200).json({ 
-            message: 'Comment added successfully', 
+        res.status(200).json({
+            message: 'Comment added successfully',
             comment,
             commentCount  // Return the updated count
         });
@@ -1477,20 +1477,50 @@ module.exports.getusernotificationcount = async (req, res) => {
 
         res.status(200).json({ count });
         console.log("Notification count", count);
-        
+
     } catch (error) {
         console.error('Error fetching notification count:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch notification count' });
     }
 }
 
-module.exports.testdashboard = async(req, res)=>{
+module.exports.testdashboard = async (req, res) => {
     try {
-        const data = await Userschema.find(); 
-        res.json(data); 
+        const data = await Userschema.find();
+        res.json(data);
         console.log(data);
-        
-      } catch (error) {
+
+    } catch (error) {
         res.status(500).json({ error: 'Failed to fetch data' });
-      }
+    }
 }
+
+
+module.exports.deletecomment = async (req, res) => {
+    try {
+        const comment = await Comment.findByIdAndDelete(req.params.id);
+
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+
+        res.status(200).json({ message: 'Comment deleted successfully', comment });
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        res.status(500).json({ message: 'Error deleting comment', error });
+    }
+}
+
+module.exports.getuserallcomments = async (req, res) => {
+    try {
+        const commentsall = await Comment.find()
+        .populate('userId', 'Fullname Uploadimg')
+        .populate('planId', 'image likes likesCount'); 
+        res.status(200).json({ commentsall });
+        console.log(commentsall);
+        
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching comments', error });
+    }   
+}
+
