@@ -10,7 +10,11 @@ const investmentSchema = new mongoose.Schema({
   investmentDate: { type: Date, default: Date.now },
   productImage: { type: String, required: false },
   investmentPeriod: { type: String, required: false },  // Add this line
-  investmentPrice: { type: String, required: false }  // Add this line
+  investmentPrice: { type: String, required: false },  // Add this line
+  cashOutPercentage: {
+    type: Number,
+    default: 0
+  }
 });
 
 const PlanSchema = new mongoose.Schema({
@@ -42,7 +46,7 @@ const PlanSchema = new mongoose.Schema({
     default: 0,
   },
   commentCount: {
-    type: Number, 
+    type: Number,
     default: 0
   },
 }, { timestamps: true });
