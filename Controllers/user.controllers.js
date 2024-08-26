@@ -1181,13 +1181,13 @@ module.exports.getplan = async (req, res) => {
 }
 
 module.exports.planinvestnow = async (req, res) => {
-    const { planId, email, productImage, investmentPeriod, investmentPrice } = req.body; // Include investmentPeriod
+    const { planId, email, productImage, investmentPeriod, investmentPrice } = req.body;
 
     try {
         console.log('Plan ID:', planId);
         console.log('Email:', email);
-        console.log('Investment Period:', investmentPeriod); // Log the investment period
-        console.log('Investment Price:', investmentPrice); // Log the investment period
+        console.log('Investment Period:', investmentPeriod); 
+        console.log('Investment Price:', investmentPrice);
 
         const plan = await Plan.findById(planId);
         if (!plan) {
@@ -1199,24 +1199,23 @@ module.exports.planinvestnow = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-
-        if (user.Balance < plan.price) {
+        // Check if the user has enough balance for the selected investment price
+        if (user.Balance < investmentPrice) {
             return res.status(400).json({ success: false, message: 'Insufficient balance for this investment' });
         }
 
+        // Deduct the selected investment amount from the user’s balance
+        user.Balance -= investmentPrice;
 
-        user.Balance -= plan.price;
-
-
+        // Update the user's history and investments with the selected investment details
         user.history.push({
             productId: planId,
             productName: plan.name,
-            productPrice: plan.price,
+            productPrice: investmentPrice, // Log the actual investment price
             productImage: productImage,
             investmentPeriod: investmentPeriod,
             investmentPrice: investmentPrice
         });
-
 
         user.investments.push({
             planId,
@@ -1224,6 +1223,7 @@ module.exports.planinvestnow = async (req, res) => {
             investmentPeriod: investmentPeriod,
             investmentPrice: investmentPrice
         });
+
         await user.save();
 
         const userData = {
@@ -1236,7 +1236,6 @@ module.exports.planinvestnow = async (req, res) => {
             amountInvest: user.Amountinvest,
             history: user.history
         };
-
 
         const mailOptions = {
             from: process.env.USER_EMAIL,
@@ -1264,7 +1263,7 @@ module.exports.planinvestnow = async (req, res) => {
                                 <ul style="color: #555555;">
                                     <li><strong>Plan ID:</strong> ${plan._id}</li>
                                     <li><strong>Plan Name:</strong> ${plan.name}</li>
-                                    <li><strong>Plan Price:</strong> ${plan.price}</li>
+                                    <li><strong>Plan Price:</strong> ₦${investmentPrice}</li>
                                     <li><strong>Investment Period:</strong> ${investmentPeriod}</li> 
                                     <li><strong>Amount To Earn:</strong> ${investmentPrice}</li> 
                                 </ul>
@@ -1301,6 +1300,7 @@ module.exports.planinvestnow = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 }
+
 
 
 module.exports.adnotification = async (req, res) => {
