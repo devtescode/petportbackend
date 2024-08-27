@@ -1186,7 +1186,7 @@ module.exports.planinvestnow = async (req, res) => {
     try {
         console.log('Plan ID:', planId);
         console.log('Email:', email);
-        console.log('Investment Period:', investmentPeriod); 
+        console.log('Investment Period:', investmentPeriod);
         console.log('Investment Price:', investmentPrice);
 
         const plan = await Plan.findById(planId);
@@ -1514,13 +1514,43 @@ module.exports.deletecomment = async (req, res) => {
 module.exports.getuserallcomments = async (req, res) => {
     try {
         const commentsall = await Comment.find()
-        .populate('userId', 'Fullname Uploadimg')
-        .populate('planId', 'image likes likesCount'); 
+            .populate('userId', 'Fullname Uploadimg')
+            .populate('planId', 'image likes likesCount');
         res.status(200).json({ commentsall });
         console.log(commentsall);
-        
+
     } catch (error) {
         res.status(500).json({ message: 'Error fetching comments', error });
-    }   
+    }
 }
 
+module.exports.getallinvest = async (req, res) => {
+    try {
+        // Query for recent investments from all users
+        const users = await Userschema.find()
+            .populate({
+                path: 'investments.planId', // Populate plan details
+                select: 'name image' // Select fields to include in the populated plan
+            })
+            .exec();
+
+        // Flatten and sort investments
+        const investments = users.flatMap(user => user.investments);
+        investments.sort((a, b) => b.investmentDate - a.investmentDate); // Sort by investmentDate
+
+        // Limit to the most recent 5 investments
+        const recentInvestments = investments.slice(0, 5);
+
+        console.log(recentInvestments);
+
+        if (!recentInvestments.length) {
+            return res.status(404).json({ success: false, message: 'No recent investments found' });
+        }
+
+        res.json({ success: true, investments: recentInvestments });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+
+};

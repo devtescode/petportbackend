@@ -1,5 +1,5 @@
 const express = require('express');
-const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, getHistory, investperform, Adminlogin, Admindb, getall, putall, postall, delecteach, getuseranimalinvest, totalbalance, totalAmountInvested, Totalinvest, changePasswordAdmin, createplan, getuserplans, adminplansdelect, updateplan, getplan, planinvestnow, adnotification, getusernotification, fetchUsersNotifications, likeplan, addcomment, getcomments, getAllNotifications, deleteNotification, getusernotificationcount, testdashboard, deletecomment, getuserallcomments,} = require('../Controllers/user.controllers');
+const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, getHistory, investperform, Adminlogin, Admindb, getall, putall, postall, delecteach, getuseranimalinvest, totalbalance, totalAmountInvested, Totalinvest, changePasswordAdmin, createplan, getuserplans, adminplansdelect, updateplan, getplan, planinvestnow, adnotification, getusernotification, fetchUsersNotifications, likeplan, addcomment, getcomments, getAllNotifications, deleteNotification, getusernotificationcount, testdashboard, deletecomment, getuserallcomments, getallinvest,} = require('../Controllers/user.controllers');
 const router = express.Router()
 
 
@@ -46,4 +46,5 @@ router.get("/getusernotificationcount", getusernotificationcount)
 router.get("/testdb", testdashboard)
 router.delete("/deletecomment/:id", deletecomment)
 router.get("/getuserallcomments", getuserallcomments)
+router.get("/getallinvest", getallinvest)
 module.exports = router
