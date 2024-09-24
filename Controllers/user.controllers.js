@@ -159,8 +159,8 @@ module.exports.signIn = (req, res) => {
                     History: user.history,
                 }
                 res.status(200).json({ message: "Login Success", status: true, token, userData })
-                // console.log("user success", userData)
-                // console.log(token);
+                // console.log("user success texting mode", userData)
+                console.log(token);
                 const mailOptions = {
                     from: process.env.USER_EMAIL,
                     to: req.body.Email,
@@ -1291,7 +1291,7 @@ module.exports.planinvestnow = async (req, res) => {
         console.log('Email sent: ' + info.response);
         res.json({
             success: true,
-            message: 'Investment successfully saved',
+            message: 'Investment successfully',
             userData: userData
         });
 
