@@ -717,14 +717,18 @@ module.exports.fundaccount = async (req, res) => {
     const { email, amount } = req.body;
     try {
         const user = await Userschema.findOne({ Email: email });
+
         if (!user) {
             return res.status(404).send('User not found');
         }
-
+        console.log(user.Fullname);
+        
         const response = await axios.post('https://api.payvessel.com/api/external/request/customerReservedAccount/', {
+            
             "email": `${email}`,
             "name": `${user.Fullname}`,
-            "phoneNumber": `${user.Number}`,
+            "phoneNumber": `0${user.Number}`,
+            // "phoneNumber": "08064864821",
             "bankcode": ["120001"],
             "account_type": "DYNAMIC",
             "businessid": "B1CB53D683864E2B86A8B1FBCEA113A4",
