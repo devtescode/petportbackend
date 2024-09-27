@@ -722,9 +722,9 @@ module.exports.fundaccount = async (req, res) => {
             return res.status(404).send('User not found');
         }
         console.log(user.Fullname);
-        
+
         const response = await axios.post('https://api.payvessel.com/api/external/request/customerReservedAccount/', {
-            
+
             "email": `${email}`,
             "name": `${user.Fullname}`,
             "phoneNumber": `0${user.Number}`,
@@ -1187,7 +1187,7 @@ module.exports.getplan = async (req, res) => {
 module.exports.planinvestnow = async (req, res) => {
     const { planId, email, productImage, investmentPeriod, investmentPrice } = req.body;
 
-    try {
+    try {   
         console.log('Plan ID:', planId);
         console.log('Email:', email);
         console.log('Investment Period:', investmentPeriod);
@@ -1558,3 +1558,31 @@ module.exports.getallinvest = async (req, res) => {
     }
 
 };
+
+module.exports.addupaccount = async (req, res) => {
+    
+    try {
+        
+        const response = await axios.get(`https://api.paystack.co/bank/resolve?account_number=${req.body.AccountNumber}&bank_code=${req.body.Bankcode}&currency=NGN`, {
+            headers: {
+                Authorization: `Bearer ${process.env.API_SECRET}`
+            }
+        });
+        console.log(response);
+
+        if (response.status !== 200) {
+            return res.status(response.status).json({ status: false, message: "Failed to validate account" });
+        }
+        else{
+            
+            const accountName = response.data.data.account_name;
+            // const accountNumber = req.body.AccountNumber;
+            // const bankCode = req.body.Bankcode;
+            console.log(accountName);
+            res.status(200).json({ status: true, message: "Correct Account", accountName});
+        }
+    } catch (err) {
+        console.error("Error occurred", err.message);
+        res.status(500).json({ status: false, error: "Internal Server Error" });
+    }
+}
