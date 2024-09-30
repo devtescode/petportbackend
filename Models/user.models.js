@@ -71,7 +71,10 @@ let schema = mongoose.Schema({
       planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Plan' },
       investmentDate: { type: Date }
     }
-  ]
+  ],
+  Account: { type: String, required: false },        
+  AccountName: { type: String, required: false },    
+  bank: { type: String, required: false }  
 }, { timestamps: true })
 
 
