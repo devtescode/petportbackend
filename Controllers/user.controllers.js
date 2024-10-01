@@ -1588,16 +1588,6 @@ module.exports.addupaccount = async (req, res) => {
                     })
             }
         }))
-        // console.log(response.data);
-
-        // if (response.status !== 200) {
-        //     return res.status(response.status).json({ status: false, message: "Failed to validate account" });
-        // }
-        // else{
-            
-        //     const accountName = response.data.data.account_name;
-        //     res.status(200).json({ status: true, message: "Correct Account", accountName});
-        // }
     } catch (err) {
         console.error("Error occurred", err.message);
         res.status(500).json({ status: false, error: "Internal Server Error" });
