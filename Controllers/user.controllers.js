@@ -1560,9 +1560,7 @@ module.exports.getallinvest = async (req, res) => {
 };
 
 module.exports.addupaccount = async (req, res) => {
-    
     try {
-        
         const { data } = await axios.get(`https://api.paystack.co/bank/resolve?account_number=${req.body.AccountNumber}&bank_code=${req.body.Bankcode}&currency=NGN`, {
             headers: {
                 Authorization: `Bearer ${process.env.API_SECRET}`
@@ -1571,6 +1569,8 @@ module.exports.addupaccount = async (req, res) => {
 
 
         jwt.verify(req.body.token, secret, ((err, result) => {
+            console.log(result);
+            
             if (err) {
                 res.send({ status: false, message: "wrong token" })
                 console.log(err);
@@ -1580,6 +1580,7 @@ module.exports.addupaccount = async (req, res) => {
                 .then((user) => {
                     res.send({ status: true, message: "Correct Account", accountName: data.data.account_name })
                     console.log("user successfully added");
+                    // console.log(user);
                     
                     
                 })
@@ -1590,6 +1591,7 @@ module.exports.addupaccount = async (req, res) => {
         }))
     } catch (err) {
         console.error("Error occurred", err.message);
-        res.status(500).json({ status: false, error: "Internal Server Error" });
+        // res.status(500).json({ status: false, error: "Internal Server Error", err.message });
+        res.status(500).json({ message: 'Internal Server Error.', err });
     }
 }
