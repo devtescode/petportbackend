@@ -1559,7 +1559,7 @@ module.exports.getallinvest = async (req, res) => {
 
 };
 
-module.exports.addupaccount = async (req, res) => {
+module.exports.addupaccount = (req, res) => {
     
     try {
         
