@@ -1680,7 +1680,6 @@ module.exports.addupaccount = async (req, res) => {
 }
 
 
-
 // module.exports.addupaccount = async (req, res) => {
 //     try {
 //         const { data } = await axios.get(`https://api.paystack.co/bank/resolve?account_number=${req.body.AccountNumber}&bank_code=${req.body.Bankcode}&currency=NGN`, {
