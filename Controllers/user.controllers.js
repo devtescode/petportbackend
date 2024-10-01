@@ -1715,6 +1715,6 @@ module.exports.addupaccount = async (req, res) => {
         });
     } catch (err) {
         console.error("Error occurred", err.message);
-        res.status(500).json({ status: false, error: "Internal Server Error." });
+        res.status(500).json({ status: false, error: "Internal Server Error" });
     }
 };
