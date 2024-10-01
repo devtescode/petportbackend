@@ -1187,7 +1187,7 @@ module.exports.getplan = async (req, res) => {
 module.exports.planinvestnow = async (req, res) => {
     const { planId, email, productImage, investmentPeriod, investmentPrice } = req.body;
 
-    try {   
+    try {
         console.log('Plan ID:', planId);
         console.log('Email:', email);
         console.log('Investment Period:', investmentPeriod);
@@ -1559,39 +1559,122 @@ module.exports.getallinvest = async (req, res) => {
 
 };
 
+// module.exports.addupaccount = async (req, res) => {
+//     try {
+//         const { data } = await axios.get(`https://api.paystack.co/bank/resolve?account_number=${req.body.AccountNumber}&bank_code=${req.body.Bankcode}&currency=NGN`, {
+//             headers: {
+//                 Authorization: `Bearer ${process.env.API_SECRET}`
+//             }
+//         });
+
+
+//         jwt.verify(req.body.token, secret, ((err, result) => {
+//             // console.log(result);
+
+//             if (err) {
+//                 res.send({ status: false, message: "wrong token" })
+//                 console.log(err);
+//             }
+//             else {
+//                 Userschema.findOneAndUpdate({ _id: result.id }, { $set: { Account: req.body.AccountNumber, AccountName: data.data.account_name, bank: req.body.bank } })
+//                     .then((user) => {
+//                         res.send({ status: true, message: "Correct Account", accountName: data.data.account_name })
+//                         console.log("user successfully added");
+//                         // console.log(user);
+
+
+//                     })
+//                     .catch((err) => {
+//                         console.log("Error Occured", err);
+//                     })
+//             }
+//         }))
+//     } catch (err) {
+//         console.error("Error occurred", err.message);
+//         res.status(500).json({ status: false, error: "Internal Server Error" });
+//     }
+// }
+
+
+
+
 module.exports.addupaccount = async (req, res) => {
+    const { AccountNumber, Bankcode, bank, token } = req.body;
+
+  
+    if (!AccountNumber || !Bankcode || !bank || !token) {
+        return res.status(400).json({ status: false, error: "Missing required fields." });
+    }
+
     try {
-        const { data } = await axios.get(`https://api.paystack.co/bank/resolve?account_number=${req.body.AccountNumber}&bank_code=${req.body.Bankcode}&currency=NGN`, {
+ 
+        const paystackResponse = await axios.get(`https://api.paystack.co/bank/resolve`, {
+            params: {
+                account_number: AccountNumber,
+                bank_code: Bankcode,
+                currency: 'NGN'
+            },
             headers: {
                 Authorization: `Bearer ${process.env.API_SECRET}`
             }
         });
 
+        const accountData = paystackResponse.data;
 
-        jwt.verify(req.body.token, secret, ((err, result) => {
-            console.log(result);
+        // Verify JWT token
+        let decoded;
+        try {
+            decoded = jwt.verify(token, secret); // Ensure JWT_SECRET is set
+        } catch (err) {
+            console.error("JWT Verification Error:", err);
+            return res.status(401).json({ status: false, message: "Invalid or expired token." });
+        }
+
+        // Update user account information
+        const updatedUser = await Userschema.findOneAndUpdate(
+            { _id: decoded.id },
+            { 
+                $set: { 
+                    Account: AccountNumber, 
+                    AccountName: accountData.data.account_name, 
+                    bank: bank 
+                } 
+            },
+            { new: true } // Return the updated document
+        );
+        // console.log(updatedUser);
+        
+
+        if (!updatedUser) {
+            return res.status(404).json({ status: false, message: "User not found." });
+        }
+
+        // Successful response
+        console.log("account successfully added");
+        return res.status(200).json({ 
+            status: true, 
+            message: "Account successfully added.", 
+            accountName: accountData.data.account_name 
             
-            if (err) {
-                res.send({ status: false, message: "wrong token" })
-                console.log(err);
-            }
-            else {
-                Userschema.findOneAndUpdate({ _id: result.id }, { $set: { Account: req.body.AccountNumber, AccountName: data.data.account_name, bank: req.body.bank } })
-                .then((user) => {
-                    res.send({ status: true, message: "Correct Account", accountName: data.data.account_name })
-                    console.log("user successfully added");
-                    // console.log(user);
-                    
-                    
-                })
-                    .catch((err) => {
-                        console.log("Error Occured", err);
-                    })
-            }
-        }))
+        });
+
     } catch (err) {
-        console.error("Error occurred", err.message);
-        // res.status(500).json({ status: false, error: "Internal Server Error", err.message });
-        res.status(500).json({ message: 'Internal Server Error.', err });
+        // Handle specific axios errors
+        if (err.response) {
+            // Errors from Paystack API
+            console.error("Paystack API Error:", err.response.data);
+            return res.status(err.response.status).json({ 
+                status: false, 
+                error: err.response.data.message || "Error resolving bank account." 
+            });
+        } else if (err.request) {
+            // Network errors
+            console.error("Network Error:", err.request);
+            return res.status(503).json({ status: false, error: "Service Unavailable." });
+        } else {
+            // Other errors
+            console.error("Server Error:", err.message);
+            return res.status(500).json({ status: false, error: "Internal Server Error." });
+        }
     }
 }
