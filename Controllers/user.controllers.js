@@ -783,10 +783,10 @@ module.exports.fundaccount = async (req, res) => {
             // If the transaction is successful, redirect the user to the Paystack payment page
             res.send({
                 status: true,
-                message: 'Account funding initiated successfully',
+                message: 'Account funding success',
                 authorization_url: response.data.data.authorization_url // This URL will take the user to Paystack for payment
             });
-            console.log(response.data.data.authorization_url);
+            console.log("Accout",response.data.data.authorization_url);
             
             console.log("Account funding initiated successfully");
         } else {
