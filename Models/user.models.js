@@ -74,7 +74,17 @@ let schema = mongoose.Schema({
   ],
   Account: { type: String, required: false },        
   AccountName: { type: String, required: false },    
-  bank: { type: String, required: false }  
+  bank: { type: String, required: false },
+  virtualAccounts: [
+    {
+        accountNumber: String,
+        accountBank: String,
+        accountName: String,
+        createdAt: { type: Date, default: Date.now },
+        expiresAt: Date,
+        isActive: { type: Boolean, default: true },
+    },
+], 
 }, { timestamps: true })
 
 

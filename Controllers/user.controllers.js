@@ -12,6 +12,7 @@ const adminsecret = process.env.ADMIN_SECRET
 const bcrypt = require("bcrypt")
 const { v4: uuidv4 } = require('uuid');
 const mongoose = require("mongoose")
+const cron = require('node-cron');
 
 env.config()
 
@@ -712,8 +713,51 @@ module.exports.forgetpassword = async (req, res) => {
         })
 }
 
+// module.exports.fundaccount = async (req, res) => {
+//     console.log(req.body);
+//     const { email, amount } = req.body;
+//     try {
+//         const user = await Userschema.findOne({ Email: email });
+
+//         if (!user) {
+//             return res.status(404).send('User not found');
+//         }
+//         console.log(user.Fullname);
+
+//         const response = await axios.post('https://api.payvessel.com/api/external/request/customerReservedAccount/', {
+
+//             "email": `${email}`,
+//             "name": `${user.Fullname}`,
+//             "phoneNumber": `0${user.Number}`,
+//             // "phoneNumber": "08064864821",
+//             "bankcode": ["120001"],
+//             "account_type": "DYNAMIC",
+//             "businessid": "B1CB53D683864E2B86A8B1FBCEA113A4",
+//         }, {
+//             headers: {
+//                 'api-key': `${PAYVESSEL_API_KEY}`,
+//                 'api-secret': `Bearer ${PAYVESSEL_API_SECRET}`,
+//                 'Content-Type': 'application/json'
+//             }
+//         });
+//         if (response.data.status === 'success') {
+//             user.Balance += amount;
+//             await user.save();
+//             res.send({ status: true, message: 'Account funded successfully', balance: user.Balance });
+//             console.log("account successfully");
+//         } else {
+//             res.status(400).send('Funding failed');
+//             console.log("fail");
+//         }
+//     } catch (error) {
+//         console.error('Error funding account', error.response.data);
+//         res.status(500).send('Internal server error');
+//     }
+// }
+
+
+
 module.exports.fundaccount = async (req, res) => {
-    console.log(req.body);
     const { email, amount } = req.body;
     try {
         const user = await Userschema.findOne({ Email: email });
@@ -723,36 +767,120 @@ module.exports.fundaccount = async (req, res) => {
         }
         console.log(user.Fullname);
 
-        const response = await axios.post('https://api.payvessel.com/api/external/request/customerReservedAccount/', {
-
-            "email": `${email}`,
-            "name": `${user.Fullname}`,
-            "phoneNumber": `0${user.Number}`,
-            // "phoneNumber": "08064864821",
-            "bankcode": ["120001"],
-            "account_type": "DYNAMIC",
-            "businessid": "B1CB53D683864E2B86A8B1FBCEA113A4",
+        // Create a transaction request with Paystack
+        const response = await axios.post('https://api.paystack.co/transaction/initialize', {
+            email: email,
+            amount: amount * 100, // Paystack requires the amount in kobo
+         
         }, {
             headers: {
-                'api-key': `${PAYVESSEL_API_KEY}`,
-                'api-secret': `Bearer ${PAYVESSEL_API_SECRET}`,
+                'Authorization': `Bearer ${process.env.API_SECRET}`,
                 'Content-Type': 'application/json'
             }
         });
-        if (response.data.status === 'success') {
-            user.Balance += amount;
-            await user.save();
-            res.send({ status: true, message: 'Account funded successfully', balance: user.Balance });
-            console.log("account successfully");
+
+        if (response.data.status) {
+            // If the transaction is successful, redirect the user to the Paystack payment page
+            res.send({
+                status: true,
+                message: 'Account funding initiated successfully',
+                authorization_url: response.data.data.authorization_url // This URL will take the user to Paystack for payment
+            });
+            console.log(response.data.data.authorization_url);
+            
+            console.log("Account funding initiated successfully");
         } else {
             res.status(400).send('Funding failed');
-            console.log("fail");
+            console.log("Funding failed");
         }
     } catch (error) {
-        console.error('Error funding account', error.response.data);
+        console.error('Error funding account', error.response ? error.response.data : error.message);
         res.status(500).send('Internal server error');
     }
-}
+};
+
+
+
+
+// module.exports.fundaccount = async (req, res) => {
+//     const { email, amount } = req.body;
+
+//     // Input validation
+//     if (!email || !amount || isNaN(amount)) {
+//         return res.status(400).send({ status: false, message: 'Invalid input data' });
+//     }
+
+//     try {
+//         const user = await Userschema.findOne({ Email: email });
+
+//         if (!user) {
+//             return res.status(404).send({ status: false, message: 'User not found' });
+//         }
+//         console.log(`Funding account for user: ${user.Fullname}`);
+
+//         // Optional: Limit the number of active virtual accounts per user (e.g., 10)
+//         const activeVAcount = user.virtualAccounts.filter(va => va.isActive);
+//         if (activeVAcount.length >= 10) {
+//             return res.status(400).send({ status: false, message: 'Maximum number of active virtual accounts reached. Please use an existing active account or wait until one expires.' });
+//         }
+
+//         // Create a Dedicated Account via Paystack
+//         const response = await axios.post(
+//             'https://api.paystack.co/dedicated_account',
+//             {
+//                 customer: user.paystackCustomerId, // Use the correct customer ID from your database
+//                 preferred_bank: 'titan-paystack', // Use the bank name you prefer
+//             },
+//             {
+//                 headers: {
+//                     Authorization: `Bearer ${process.env.API_SECRET}`, // Use your Paystack secret key
+//                     'Content-Type': 'application/json',
+//                 },
+//             }
+//         );
+
+//         // Log the Paystack response for debugging
+//         console.log('Paystack Response:', response.data);
+
+//         if (response.data.status) {
+//             const dedicatedAccount = response.data.data;
+
+//             // Save virtual account details to the user
+//             user.virtualAccounts.push({
+//                 accountNumber: dedicatedAccount.account_number,
+//                 accountBank: dedicatedAccount.account_bank,
+//                 accountName: dedicatedAccount.account_name,
+//                 // Optionally store any other details you want
+//                 isActive: true, // Mark the account as active
+//             });
+//             await user.save();
+
+//             // Respond with the virtual account details
+//             res.send({
+//                 status: true,
+//                 message: 'Dedicated account created successfully',
+//                 virtualAccount: {
+//                     account_number: dedicatedAccount.account_number,
+//                     account_bank: dedicatedAccount.account_bank,
+//                     account_name: dedicatedAccount.account_name,
+//                     createdAt: dedicatedAccount.createdAt,
+//                     // Add any other relevant details here
+//                 },
+//             });
+//             console.log("Dedicated account created successfully");
+//             console.log(`Account Number: ${dedicatedAccount.account_number}`);
+//             console.log(`Bank: ${dedicatedAccount.account_bank}`);
+//             console.log(`Account Name: ${dedicatedAccount.account_name}`);
+//         } else {
+//             res.status(400).send({ status: false, message: 'Dedicated account creation failed', error: response.data.message });
+//             console.log("Dedicated account creation failed: ", response.data.message);
+//         }
+//     } catch (error) {
+//         console.error('Error creating dedicated account', error.response ? error.response.data : error.message);
+//         res.status(500).send({ status: false, message: 'Internal server error' });
+//     }
+// };
+
 
 
 module.exports.getHistory = async (req, res) => {
@@ -1717,3 +1845,5 @@ module.exports.addupaccount = async (req, res) => {
 //         res.status(500).json({ status: false, error: "Internal Server Error." });
 //     }
 // };
+
+
