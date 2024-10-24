@@ -19,6 +19,7 @@ mongoose.connect(URI)
     console.log(err);
 })
 app.use("/useranimalinvest", userRoutes)
+app.use(userRoutes)
 // app.use('/admin', adminRoutes);
 app.get("/", (req,res)=>{
     res.status(200).json({message:"Welcome to Animal company"})

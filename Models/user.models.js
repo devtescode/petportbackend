@@ -51,6 +51,14 @@ const PlanSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
+
+const transactionSchema = new mongoose.Schema({
+  amount: { type: Number, required: true },    // Amount of the transaction
+  reference: { type: String, required: true },  // Reference of the transaction
+  type: { type: String, enum: ['credit', 'debit'], required: true }, // Type of transaction
+  date: { type: Date, default: Date.now }       // Date of transaction
+});
+
 let schema = mongoose.Schema({
   Fullname: { type: String, required: true },
   Number: { type: Number, required: true },
@@ -72,19 +80,20 @@ let schema = mongoose.Schema({
       investmentDate: { type: Date }
     }
   ],
-  Account: { type: String, required: false },        
-  AccountName: { type: String, required: false },    
+  Account: { type: String, required: false },
+  AccountName: { type: String, required: false },
   bank: { type: String, required: false },
   virtualAccounts: [
     {
-        accountNumber: String,
-        accountBank: String,
-        accountName: String,
-        createdAt: { type: Date, default: Date.now },
-        expiresAt: Date,
-        isActive: { type: Boolean, default: true },
+      accountNumber: String,
+      accountBank: String,
+      accountName: String,
+      createdAt: { type: Date, default: Date.now },
+      expiresAt: Date,
+      isActive: { type: Boolean, default: true },
     },
-], 
+  ],
+  transactions: [transactionSchema]
 }, { timestamps: true })
 
 

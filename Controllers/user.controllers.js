@@ -770,6 +770,7 @@ module.exports.fundaccount = async (req, res) => {
         // Create a transaction request with Paystack
         const response = await axios.post('https://api.paystack.co/transaction/initialize', {
             email: email,
+            // Fullname,
             amount: amount * 100, // Paystack requires the amount in kobo
          
         }, {
@@ -786,9 +787,9 @@ module.exports.fundaccount = async (req, res) => {
                 message: 'Account funding success',
                 authorization_url: response.data.data.authorization_url // This URL will take the user to Paystack for payment
             });
-            console.log("Accout",response.data.data.authorization_url);
+            // console.log("Accout",response.data.data.reference);
             
-            console.log("Account funding initiated successfully");
+            console.log("link response successfully sent");
         } else {
             res.status(400).send('Funding failed');
             console.log("Funding failed");
@@ -800,6 +801,76 @@ module.exports.fundaccount = async (req, res) => {
 };
 
 
+
+// module.exports.paystackWebhook = async (req, res) => {
+//     const { event, data } = req.body;
+
+//     // Paystack sends different events, we're only interested in successful transactions
+//     if (event === 'charge.success') {
+//         const transactionRef = data.reference;
+
+//         // Verify transaction with Paystack to be sure it's valid
+//         // console.log(verifyResponse);
+        
+//         try {
+//             const verifyResponse = await axios.get(`https://api.paystack.co/transaction/verify/${transactionRef}`, {
+//                 headers: {
+//                     'Authorization': `Bearer ${process.env.API_SECRET}`
+//                 }
+//             });
+
+//             if (verifyResponse.data.status && verifyResponse.data.data.status === 'success') {
+//                 // Find the user by email or other identifier
+//                 const user = await Userschema.findOne({ Email: verifyResponse.data.data.customer.email });
+
+//                 if (user) {
+//                     // Update the user's balance
+//                     user.Balance += verifyResponse.data.data.amount / 100; // Convert kobo to Naira
+//                     await user.save();
+
+//                     console.log('User balance updated successfully');
+//                     res.status(200).send('Webhook processed successfully');
+//                 } else {
+//                     res.status(404).send('User not found');
+//                     console.log("user not found");
+                    
+//                 }
+//             } else {
+//                 res.status(400).send('Transaction verification failed');
+//                 console.log("Transaction verification failed");
+                
+//             }
+//         } catch (error) {
+//             console.error('Error verifying transaction:', error);
+//             res.status(500).send('Server error');
+//         }
+//     } else {
+//         res.status(400).send('Event not handled');
+//     }
+// };
+
+
+
+module.exports.getBalance = async (req, res) => {
+    const { email } = req.params; // Extract email from URL
+
+    try {
+        const user = await Userschema.findOne({ Email: email });
+        // console.log("my user balance", user.Balance);
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Send user's balance in the response
+        res.status(200).json({ Balance: user.Balance });
+        console.log(user.Balance);
+        
+    } catch (error) {
+        console.error('Error fetching user balance:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 
 
 // module.exports.fundaccount = async (req, res) => {
