@@ -771,6 +771,7 @@ module.exports.fundaccount = async (req, res) => {
         const response = await axios.post('https://api.paystack.co/transaction/initialize', {
             email: email,
             // Fullname,
+            // fullname : user.Fullname,
             amount: amount * 100, // Paystack requires the amount in kobo
          
         }, {

@@ -5,6 +5,8 @@ const env = require ('dotenv').config()
 const PORT = process.env.PORT || 5000
 const URI = process.env.URI
 const userRoutes = require("./Routes/user.routes")
+const paystackroute = require("./Controllers/paystackWebhook")
+const webhookRouter = require('./paystacklocalhost/webhook');
 
 const cors = require('cors')
 app.use(cors())
@@ -20,6 +22,14 @@ mongoose.connect(URI)
 })
 app.use("/useranimalinvest", userRoutes)
 app.use(userRoutes)
+
+
+app.use("/api", paystackroute)
+app.use(paystackroute)
+
+
+app.use(webhookRouter);
+// app.use
 // app.use('/admin', adminRoutes);
 app.get("/", (req,res)=>{
     res.status(200).json({message:"Welcome to Animal company"})

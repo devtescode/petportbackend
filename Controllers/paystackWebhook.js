@@ -1,61 +1,47 @@
 // controllers/paystackWebhook.js
 
-const axios = require('axios');
-const Userschema = require('../Models/user.models'); // Adjust the path to your user model
 
-module.exports.paystackWebhook = async (req, res) => {
-    const { event, data } = req.body;
+// webhookRoutes.js
+const express = require('express');
+const router = express.Router();
+const crypto = require('crypto');
+const Userschema = require('../Models/user.models'); 
+// const Userschema = require('../models/Userschema'); // Adjust the path as needed
 
-    // Log the received event and data for debugging
-    console.log('Received webhook event:', event, 'with data:', data);
+// Paystack Webhook Route
 
-    if (event === 'charge.success') {
-        const transactionRef = data.reference;
+    
+router.post('/paystack/webhook', async (req, res) => {
+    const paystackSignature = req.headers['x-paystack-signature'];
+    const hash = crypto.createHmac('sha512', process.env.API_SECRET).update(JSON.stringify(req.body)).digest('hex');
 
-        try {
-            const verifyResponse = await axios.get(`https://api.paystack.co/transaction/verify/${transactionRef}`, {
-                headers: {
-                    'Authorization': `Bearer ${process.env.API_SECRET}`
-                }
-            });
-            console.log(verifyResponse);
-            
-
-            if (verifyResponse.data.status && verifyResponse.data.data.status === 'success') {
-                const user = await Userschema.findOne({ Email: verifyResponse.data.data.customer.email });
-
-                if (user) {
-                    const amountInNaira = verifyResponse.data.data.amount / 100; // Convert from kobo to Naira
-                    console.log(amountInNaira);
-                    
-                    user.Balance += amountInNaira;
-
-                    // Log the transaction
-                    user.transactions.push({
-                        amount: amountInNaira,
-                        reference: transactionRef,
-                        type: 'credit', // Assuming this is a credit transaction
-                        date: new Date() // Optional: add timestamp
-                    });
-
-                    await user.save();
-
-                    console.log('User balance and transaction updated successfully');
-                    res.status(200).send('Webhook processed successfully');
-                } else {
-                    console.error('User not found for email:', verifyResponse.data.data.customer.email);
-                    res.status(404).send('User not found');
-                }
-            } else {
-                console.error('Transaction verification failed:', verifyResponse.data);
-                res.status(400).send('Transaction verification failed');
-            }
-        } catch (error) {
-            console.error('Error verifying transaction:', error);
-            res.status(500).send('Server error');
-        }
-    } else {
-        console.warn('Unhandled event type:', event);
-        res.status(400).send('Event not handled');
+    if (hash !== paystackSignature) {
+        return res.status(400).send('Invalid signature');
     }
-};
+
+    const event = req.body;
+
+    try {
+        if (event.event === 'charge.success') {
+            const transactionId = event.data.reference;
+            const userEmail = event.data.customer.email;
+            const amountPaid = event.data.amount / 100; // Convert to Naira if stored in Kobo
+
+            await Userschema.findOneAndUpdate(
+                { Email: userEmail },
+                { $inc: { Balance: amountPaid } } // Example balance update
+            );
+
+            console.log(`Payment successful for ${userEmail} with transaction ID: ${transactionId}`);
+            return res.status(200).send('Transaction processed successfully');
+        } else if (event.event === 'charge.failed') {
+            console.log('Payment failed for transaction ID:', event.data.reference);
+            return res.status(200).send('Transaction failed');
+        }
+    } catch (error) {
+        console.error('Error handling webhook', error.message);
+        res.status(500).send('Internal server error');
+    }
+});
+
+module.exports = router;
