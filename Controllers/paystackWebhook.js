@@ -51,13 +51,14 @@ router.post('/webhook', async (req, res) => {
     console.log('Request body:', req.body);  // Add this line to inspect the body
     const paystackSignature = req.headers['x-paystack-signature'];
     const hash = crypto.createHmac('sha512', process.env.API_SECRET).update(JSON.stringify(req.body)).digest('hex');
+    
+        const event = req.body;
+        console.log(event ? event : 'no event send');  // Logs if the event object is undefined or missing
 
     if (hash !== paystackSignature) {
+        console.log('invalid hash')
         return res.status(400).send('Invalid signature');
     }
-
-    const event = req.body;
-    console.log(event ? event : 'no event send');  // Logs if the event object is undefined or missing
 
     try {
         if (event && event.event === 'charge.success') {
