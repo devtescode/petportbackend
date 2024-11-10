@@ -21,7 +21,7 @@ router.post('/webhook', async (req, res) => {
     }
     const event = req.body;
 
-
+    console.log(event? event: 'no event send ');
     try {
         if (event.event === 'charge.success') {
             const transactionId = event.data.reference;
