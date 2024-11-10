@@ -11,15 +11,16 @@ const Userschema = require('../Models/user.models');
 // Paystack Webhook Route
 
     
-router.post('/paystack/webhook', async (req, res) => {
+router.post('/webhook', async (req, res) => {
+    console.log('in webhook')
     const paystackSignature = req.headers['x-paystack-signature'];
     const hash = crypto.createHmac('sha512', process.env.API_SECRET).update(JSON.stringify(req.body)).digest('hex');
 
     if (hash !== paystackSignature) {
         return res.status(400).send('Invalid signature');
     }
-
     const event = req.body;
+
 
     try {
         if (event.event === 'charge.success') {

@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 5000
 const URI = process.env.URI
 const userRoutes = require("./Routes/user.routes")
 const paystackroute = require("./Controllers/paystackWebhook")
-const webhookRouter = require('./paystacklocalhost/webhook');
+// const webhookRouter = require('./paystacklocalhost/webhook');
 
 const cors = require('cors')
 app.use(cors())
@@ -24,16 +24,17 @@ app.use("/useranimalinvest", userRoutes)
 app.use(userRoutes)
 
 
-app.use("/api", paystackroute)
-app.use(paystackroute)
+// app.use("/api", paystackroute)
+// app.use(paystackroute)
 
 
-app.use(webhookRouter);
+app.use("/api/paystack", paystackroute);
 // app.use
 // app.use('/admin', adminRoutes);
-app.get("/", (req,res)=>{
-    res.status(200).json({message:"Welcome to Animal company"})
+app.get("", (req,res)=>{
+    res.status(200).json({message:"Welcome to Animal"})
 })
+
 app.listen(PORT, ()=>{
     console.log("Server is running on port 5000");
 })
