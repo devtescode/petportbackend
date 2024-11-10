@@ -13,7 +13,7 @@ app.use(cors())
 app.use(express.urlencoded({ extended:true, limit:"200mb"}))
 app.use(express.json({limit:"200mb"}))
 
-
+app.use(express.json());
 mongoose.connect(URI)
 .then(()=>{
     console.log("Datebase connect succcessfully");
@@ -24,8 +24,8 @@ app.use("/useranimalinvest", userRoutes)
 app.use(userRoutes)
 
 
-// app.use("/api", paystackroute)
-// app.use(paystackroute)
+app.use("/api", paystackroute)
+app.use(paystackroute)
 
 
 app.use("/api/paystack", paystackroute);
