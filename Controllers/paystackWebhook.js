@@ -31,6 +31,7 @@ router.post('/webhook', async (req, res) => {
     // Compare the calculated hash with Paystack's signature
     if (hash !== paystackSignature) {
         console.log('Invalid hash');
+        console.log('Paystack signature:', paystackSignature, 'Hash:', hash);
         return res.status(400).send('Invalid signature');
     }
 
