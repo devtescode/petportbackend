@@ -1,50 +1,48 @@
-// controllers/paystackWebhook.js
-
-
 // webhookRoutes.js
 const express = require('express');
-const app = express()
+const app = express();
 const router = express.Router();
 const crypto = require('crypto');
-const Userschema = require('../Models/user.models'); 
-// const Userschema = require('../models/Userschema'); // Adjust the path as needed
+const Userschema = require('../Models/user.models');
 
-// Paystack Webhook Route
+require('dotenv').config();
 
-
-console.log(process.env.API_SECRET, 'ddkdkdkd')
 app.use(express.json({
     verify: (req, res, buf) => {
-      req.rawBody = buf.toString();
+        req.rawBody = buf.toString();
     }
 }));
+
 router.post('/webhook', async (req, res) => {
     console.log('in webhook');
-    console.log('Request body:', req.body);  // Add this line to inspect the body
-    // const paystackSignature = req.headers['x-paystack-signature'];
-
-    const rawBody = JSON.stringify(req.body);
-    const hash = crypto.createHmac('sha512', process.env.API_SECRET).update(rawBody).digest('hex');
+    console.log('Request body:', req.body);
+    console.log('Paystack signature:', req.headers['x-paystack-signature']);
     
-        
+    const hash = crypto
+        .createHmac('sha512', process.env.API_SECRET)
+        .update(req.rawBody)
+        .digest('hex');
 
+    // Verify signature
     if (hash !== req.headers['x-paystack-signature']) {
-        console.log('invalid hash')
-        console.log(req.headers['x-paystack-signature'], 'hash:', hash )
+        console.log('Invalid hash');
+        console.log(`Received signature: ${req.headers['x-paystack-signature']}`);
+        console.log(`Generated hash: ${hash}`);
         return res.status(400).send('Invalid signature');
     }
 
     const event = req.body;
-    console.log(event ? event : 'no event send');  // Logs if the event object is undefined or missing
+    console.log('Event received:', event ? event : 'No event found');
+
     try {
         if (event && event.event === 'charge.success') {
             const transactionId = event.data.reference;
             const userEmail = event.data.customer.email;
-            const amountPaid = event.data.amount / 100; // Convert to Naira if stored in Kobo
+            const amountPaid = event.data.amount / 100;
 
             await Userschema.findOneAndUpdate(
                 { Email: userEmail },
-                { $inc: { Balance: amountPaid } } // Example balance update
+                { $inc: { Balance: amountPaid } }
             );
 
             console.log(`Payment successful for ${userEmail} with transaction ID: ${transactionId}`);
@@ -54,8 +52,8 @@ router.post('/webhook', async (req, res) => {
             return res.status(200).send('Transaction failed');
         }
     } catch (error) {
-        console.error('Error handling webhook', error.message);
-        res.status(500).send('Internal server error');
+        console.error('Error handling webhook:', error.message);
+        return res.status(500).send('Internal server error');
     }
 });
 
