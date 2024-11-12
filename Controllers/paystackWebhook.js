@@ -3,6 +3,7 @@
 
 // webhookRoutes.js
 const express = require('express');
+const app = express()
 const router = express.Router();
 const crypto = require('crypto');
 const Userschema = require('../Models/user.models'); 
@@ -11,11 +12,19 @@ const Userschema = require('../Models/user.models');
 // Paystack Webhook Route
 
 
+console.log(process.env.API_SECRET, 'ddkdkdkd')
+app.use(express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf.toString();
+    }
+}));
 router.post('/webhook', async (req, res) => {
     console.log('in webhook');
     console.log('Request body:', req.body);  // Add this line to inspect the body
     // const paystackSignature = req.headers['x-paystack-signature'];
-    const hash = crypto.createHmac('sha512', process.env.API_SECRET).update(JSON.stringify(req.body)).digest('hex');
+
+    const rawBody = JSON.stringify(req.body);
+    const hash = crypto.createHmac('sha512', process.env.API_SECRET).update(rawBody).digest('hex');
     
         
 
