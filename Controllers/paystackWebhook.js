@@ -15,7 +15,7 @@ app.use(express.json({
 
 router.post('/webhook', async (req, res) => {
     console.log('in webhook');
-    console.log('Request body:', req.body);
+    // console.log('Request body:', req.body);
     console.log('Paystack signature:', req.headers['x-paystack-signature']);
     
     const hash = crypto
