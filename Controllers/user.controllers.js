@@ -792,7 +792,6 @@ module.exports.fundaccount = async (req, res) => {
             
             console.log("link response successfully sent");
         } else {
-       
             res.status(400).send('Funding failed');
             console.log("Funding failed");
         }
