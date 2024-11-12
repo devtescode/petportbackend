@@ -1,26 +1,27 @@
 // webhookRoutes.js
 const express = require('express');
 const app = express();
+const env = require('dotenv').config();
 const router = express.Router();
 const crypto = require('crypto');
 const Userschema = require('../Models/user.models');
 
-require('dotenv').config();
 
 router.use(express.json({
     verify: (req, res, buf) => {
         req.rawBody = buf.toString();
     }
 }));
-
+console.log(process.env.API_SECRET)
+const secret = process.env.API_SECRET
 router.post('/webhook', async (req, res) => {
     console.log('in webhook');
     // console.log('Request body:', req.body);
     console.log('Paystack signature:', req.headers['x-paystack-signature']);
     
     const hash = crypto
-        .createHmac('sha512', process.env.API_SECRET)
-        .update(req.rawBody)
+        .createHmac('sha512', secret)
+        .update(JSON.stringify(req.body))
         .digest('hex');
 
     // Verify signature
