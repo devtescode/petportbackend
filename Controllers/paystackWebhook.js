@@ -4,13 +4,13 @@ const crypto = require('node:crypto');
 const bodyParser = require('body-parser');
 const Userschema = require('../Models/user.models');
 const router = express.Router();
+const env = require('dotenv').config();
 
 
 router.use(bodyParser.raw({ type: 'application/json' }));
 
 router.post('/webhook', async (req, res) => {
     console.log('In webhook routing');
-    const env = require('dotenv').config();
     const paystackSignature = req.headers['x-paystack-signature'];
     const rawBody = req.body;  // Keep as Buffer
 
