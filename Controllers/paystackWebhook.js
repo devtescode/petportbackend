@@ -4,9 +4,8 @@ const crypto = require('node:crypto');
 const bodyParser = require('body-parser');
 const Userschema = require('../Models/user.models');
 const router = express.Router();
-const env = require('dotenv').config();
-
-
+const env = require('dotenv')
+env.config()
 router.use(bodyParser.raw({ type: 'application/json' }));
 
 router.post('/webhook', async (req, res) => {
