@@ -31,7 +31,9 @@ router.post('/webhook', async (req, res) => {
         console.log(`Generated hash: ${hash}`);
         return res.status(400).send('Invalid signature');
     }
-
+    else{
+        console.log('valid hash')
+    }
     const event = req.body;
     console.log('Event received:', event ? event : 'No event found');
 
