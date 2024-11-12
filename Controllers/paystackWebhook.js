@@ -11,10 +11,12 @@ router.use(bodyParser.raw({ type: 'application/json' })); // This captures the r
 
 router.post('/webhook', async (req, res) => {
     console.log('In webhook route');
+    console.log("API_SECRET:", process.env.API_SECRET); 
 
     // Capture raw body from req, this should be a Buffer
     const rawBody = req.body.toString('utf8');
     console.log('Raw body:', rawBody);
+
 
     if (!rawBody) {
         console.error("Raw body is undefined.");
