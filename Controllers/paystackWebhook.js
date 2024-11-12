@@ -24,7 +24,7 @@ router.post('/webhook', async (req, res) => {
     // const paystackSignature = req.headers['x-paystack-signature'];
 
     const rawBody = JSON.stringify(req.body);
-    const hash = crypto.createHmac('sha512', process.env.API_SECRET).update(req.rawBody).digest('hex');
+    const hash = crypto.createHmac('sha512', process.env.API_SECRET).update(rawBody).digest('hex');
     
         
 
