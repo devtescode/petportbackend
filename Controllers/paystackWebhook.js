@@ -7,7 +7,7 @@ const Userschema = require('../Models/user.models');
 
 require('dotenv').config();
 
-app.use(express.json({
+router.use(express.json({
     verify: (req, res, buf) => {
         req.rawBody = buf.toString();
     }
