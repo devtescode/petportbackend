@@ -25,7 +25,7 @@ router.post('/webhook', (req, res) => {
         .digest('hex');
 
     if (signature !== expectedSignature) {
-        console.log('Invalid signature');
+        // console.log('Invalid signature');
         return res.status(403).send('Invalid signature');
     }
 
