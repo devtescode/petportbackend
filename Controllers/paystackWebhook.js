@@ -7,7 +7,7 @@ require('dotenv').config();
 
 
 router.post('/webhook', (req, res) => {
-    console.log('Webhook endpoint hit.');
+    console.log('Webhook endpoint hit working.');
 
     // Retrieve the Paystack signature from headers
     const signature = req.headers['x-paystack-signature'];
