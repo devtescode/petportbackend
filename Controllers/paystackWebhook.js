@@ -35,7 +35,6 @@ router.post('/webhook', (req, res) => {
         .createHmac('sha512', process.env.API_SECRET)
         .update(rawBody)
         .digest('hex');
-
     if (signature !== expectedSignature) {
         console.error('Invalid signature received.');
         return res.status(403).send('Forbidden: Invalid signature');
