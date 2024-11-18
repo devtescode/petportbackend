@@ -3,12 +3,12 @@ const crypto = require('crypto');
 const router = express.Router();
 
 router.post('/webhook', (req, res) => {
-    console.log('Webhook endpoint hit.');
+    console.log('Webhook endpoint hit....');
 
     // Check if rawBody is available
     const rawBody = req.rawBody;
     if (!rawBody) {
-        console.error('Raw body is undefined or empty.');
+        console.error('Raw body is undefined or empty....');
         return res.status(400).send('Bad Request: Raw body missing');
     }
 
