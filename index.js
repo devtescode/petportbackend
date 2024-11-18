@@ -31,18 +31,18 @@ app.use(userRoutes)
 app.use(
     '/api/paystack',
     express.raw({
-        type: 'application/json',
-        verify: (req, res, buf) => {
-            req.rawBody = buf;
-        },
+      type: 'application/json', // Paystack content type
+      verify: (req, res, buf) => {
+        req.rawBody = buf;  // Capture the raw body
+      },
     }),
     (req, res, next) => {
-        // Debugging step to confirm rawBody is being captured
-        console.log("Raw Body captured:", req.rawBody.toString('utf8'));
-        next(); // Continue to the next middleware
+      // Debugging: Check if rawBody is captured correctly
+      console.log('Raw body captured:', req.rawBody ? req.rawBody.toString() : 'No raw body');
+      next();  // Proceed to next middleware (paystackroute)
     },
-    paystackroute
-);
+    paystackroute  // Call the webhook route
+  );
 // app.use("/api/paystack", paystackroute);
 // app.use
 // app.use('/admin', adminRoutes);
