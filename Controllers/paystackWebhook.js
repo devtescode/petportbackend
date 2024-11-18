@@ -7,7 +7,7 @@ require('dotenv').config();
 
 
 router.post('/webhook', (req, res) => {
-    console.log('Webhook endpoint hit working.');
+    console.log('Webhook endpoint hit working..');
 
     // Retrieve the Paystack signature from headers
     const signature = req.headers['x-paystack-signature'];
@@ -20,7 +20,7 @@ router.post('/webhook', (req, res) => {
     // Access the raw body stored by the middleware
     const rawBody = req.rawBody;
     if (!rawBody) {
-        console.error('Raw body is undefined or empty.');
+        console.error('Raw body is undefined or empty..');
         return res.status(400).send('Bad Request: Raw body missing');
     }
 
