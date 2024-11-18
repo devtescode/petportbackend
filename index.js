@@ -24,11 +24,21 @@ app.use("/useranimalinvest", userRoutes)
 app.use(userRoutes)
 
 
-app.use("/api", paystackroute)
-app.use(paystackroute)
+// app.use("/api", paystackroute)
+// app.use(paystackroute)
 
 
-app.use("/api/paystack", paystackroute);
+app.use(
+    '/api/paystack',
+    express.raw({
+        type: 'application/json', // Matches Paystack's content type
+        verify: (req, res, buf) => {
+            req.rawBody = buf; // Capture raw body for verification
+        },
+    }),
+    paystackroute
+);
+// app.use("/api/paystack", paystackroute);
 // app.use
 // app.use('/admin', adminRoutes);
 app.get("", (req,res)=>{
@@ -38,8 +48,3 @@ app.get("", (req,res)=>{
 app.listen(PORT, ()=>{
     console.log("Server is running on port 5000");
 })
-
-
-
-
-
