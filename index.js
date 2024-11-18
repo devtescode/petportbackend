@@ -31,11 +31,16 @@ app.use(userRoutes)
 app.use(
     '/api/paystack',
     express.raw({
-        type: 'application/json', // Matches Paystack's content type
+        type: 'application/json',
         verify: (req, res, buf) => {
-            req.rawBody = buf; // Capture raw body for verification
+            req.rawBody = buf;
         },
     }),
+    (req, res, next) => {
+        // Debugging step to confirm rawBody is being captured
+        console.log("Raw Body captured:", req.rawBody.toString('utf8'));
+        next(); // Continue to the next middleware
+    },
     paystackroute
 );
 // app.use("/api/paystack", paystackroute);

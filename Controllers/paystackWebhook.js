@@ -4,14 +4,7 @@ const router = express.Router();
 require('dotenv').config();
 
 // Middleware to capture raw body for signature verification
-router.use(
-    express.raw({
-        type: 'application/json',
-        verify: (req, res, buf) => {
-            req.rawBody = buf; // Store the raw body for later use
-        },
-    })
-);
+
 
 router.post('/webhook', (req, res) => {
     console.log('Webhook endpoint hit.');
