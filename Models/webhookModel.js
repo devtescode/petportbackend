@@ -15,7 +15,3 @@ const paymentSchema = new mongoose.Schema({
 
 const PaymentDB = mongoose.model('Paystackpayment', paymentSchema);
 module.exports = { PaymentDB } 
-
-
-// const Comment = mongoose.model('Comment', commentSchema);
-// module.exports = { Userschema, Plan, Notification, Comment }
