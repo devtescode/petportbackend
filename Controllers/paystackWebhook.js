@@ -1,6 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
+const paymentDB= require('../Models/webhookModel')
 require('dotenv').config();
 
 const PAYSTACK_SECRET = process.env.API_SECRET;
@@ -36,6 +37,9 @@ router.post('/webhook', (req, res) => {
                 const amount = event.data.amount / 100; // Convert kobo to naira
                 console.log(`Payment successful for ${email}, Amount: ₦${amount}`);
                 // Add your business logic here (e.g., update user data)
+
+                const savePayment= new paymentDB ({event: event})
+                savePayment.save()
             }
 
             return res.status(200).json({ message: 'Webhook processed successfully' });
