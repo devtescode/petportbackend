@@ -13,7 +13,7 @@ const paymentSchema = new mongoose.Schema({
     channel: { type: String, required: true },
 }, { timestamps: true });
 
-const PaymentDB = mongoose.model('Payment', paymentSchema);
+const PaymentDB = mongoose.model('Paystackpayment', paymentSchema);
 module.exports = { PaymentDB } 
 
 
