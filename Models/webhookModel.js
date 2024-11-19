@@ -13,5 +13,9 @@ const paymentSchema = new mongoose.Schema({
     channel: { type: String, required: true },
 }, { timestamps: true });
 
-const webhook = mongoose.model('Payment', paymentSchema);
-module.exports = webhook
+const PaymentDB = mongoose.model('Payment', paymentSchema);
+module.exports = { PaymentDB } 
+
+
+// const Comment = mongoose.model('Comment', commentSchema);
+// module.exports = { Userschema, Plan, Notification, Comment }
