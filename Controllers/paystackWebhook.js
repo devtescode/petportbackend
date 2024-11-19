@@ -16,6 +16,7 @@ router.post('/webhook', (req, res) => {
         }
 
         const rawBodyString = rawBody.toString('utf8'); // Convert buffer to string
+        // utf8
 
         // Validate the signature with HMAC-SHA512
         const hash = crypto.createHmac('sha512', PAYSTACK_SECRET).update(rawBodyString).digest('hex');
