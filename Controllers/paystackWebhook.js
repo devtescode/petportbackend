@@ -4,7 +4,7 @@ const router = express.Router();
 require('dotenv').config();
 
 const PAYSTACK_SECRET = process.env.API_SECRET;
-console.log('Paystack Secret:', PAYSTACK_SECRET);  // Log to check if it's loaded correctly
+console.log('Paystack Secret:', PAYSTACK_SECRET);  // Log to check if it's loaded properly
 
 router.post('/webhook', (req, res) => {
     try {
@@ -16,14 +16,14 @@ router.post('/webhook', (req, res) => {
             return res.status(400).json({ error: 'Missing raw body or signature' });
         }
 
-        const rawBodyString = rawBody.toString('utf8'); // Convert buffer to string
+        // Convert buffer to string only if it's a Buffer
+        const rawBodyString = rawBody instanceof Buffer ? rawBody.toString('utf8') : JSON.stringify(rawBody);
         console.log('Raw Body:', rawBodyString);
 
         // Validate the signature with HMAC-SHA512
         const hash = crypto.createHmac('sha512', PAYSTACK_SECRET).update(rawBodyString).digest('hex');
         console.log('Calculated Hash:', hash);
         console.log('Paystack Signature:', signature);
-        console.log('Content-Type:', req.headers['content-type']);
 
         if (hash === signature) {
             // Signature is valid
@@ -48,6 +48,5 @@ router.post('/webhook', (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
-
 
 module.exports = router;
