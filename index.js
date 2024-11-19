@@ -29,7 +29,7 @@ app.use('/useranimalinvest', userRoutes);
 
 // Middleware for Paystack webhook
 app.use(
-  '/api/paystack/webhook',
+  '/api/paystack',
   express.raw({ type: '*/*' }), // Capture raw body for webhook
   (req, res, next) => {
       req.rawBody = req.body; // Assign raw body to req.rawBody
