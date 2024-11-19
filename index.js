@@ -1,53 +1,57 @@
-const express = require('express')
-const app = express()
-const mongoose = require('mongoose')
-require ('dotenv').config()
-const PORT = process.env.PORT || 5000
-const URI = process.env.URI
-const userRoutes = require("./Routes/user.routes")
-const paystackroute = require("./Controllers/paystackWebhook")
-// const webhookRouter = require('./paystacklocalhost/webhook');
+const express = require('express');
+const mongoose = require('mongoose');
+require('dotenv').config();
+const cors = require('cors');
+const userRoutes = require('./Routes/user.routes');
+const paystackroute = require('./Controllers/paystackWebhook');
 
-const cors = require('cors')
-app.use(cors())
-app.use(express.urlencoded({ extended:true, limit:"200mb"}))
-app.use(express.json({limit:"200mb"}))
+const app = express();
+const PORT = process.env.PORT || 5000;
+const URI = process.env.URI;
 
-app.use(express.json());
-mongoose.connect(URI)
-.then(()=>{
-    console.log("Datebase connect succcessfully");
-}).catch((err)=>{
-    console.log(err);
-})
-app.use("/useranimalinvest", userRoutes)
-app.use(userRoutes)
+// Middleware
+app.use(cors());
+app.use(express.urlencoded({ extended: true, limit: '200mb' }));
+app.use(express.json({ limit: '200mb' }));
 
+// Connect to MongoDB
+mongoose
+    .connect(URI)
+    .then(() => {
+        console.log('Database connected successfully');
+    })
+    .catch((err) => {
+        console.error('Database connection error:', err);
+    });
 
-// app.use("/api", paystackroute)
-// app.use(paystackroute)
+// Routes
+app.use('/useranimalinvest', userRoutes);
 
+// Middleware for Paystack webhook
+app.use(
+    '/api/paystack/webhook',
+    express.raw({ type: '*/*' }), // Parse raw data
+    (req, res, next) => {
+        req.rawBody = req.body; // Assign raw body
+        next();
+    }
+);
 
-app.use('/api/paystack/webhook', express.raw({ type: '*/*' }));
+// Paystack Webhook Route
+app.use('/api/paystack', paystackroute);
 
-// Debugging Middleware to log raw body
-app.use('/api/paystack/webhook', (req, res, next) => {
-    req.rawBody = req.body; // Assign raw body to req.rawBody for use in route
-    console.log('Raw body captured:', req.rawBody ? req.rawBody.toString() : 'No raw body');
-    next();
+// Default Route
+app.get('/', (req, res) => {
+    res.status(200).json({ message: 'Welcome to Animal Investment Platform' });
 });
 
-// Use the Paystack route
-app.use('/api/paystack', paystackroute);
-// Use Paystack webhook route
-// app.use('/api/paystack', paystackroute);
+// Catch-all Error Handler
+app.use((err, req, res, next) => {
+    console.error('Error:', err.message);
+    res.status(500).json({ message: 'Internal Server Error' });
+});
 
-
-
-app.get("", (req,res)=>{
-    res.status(200).json({message:"Welcome to Animal"})
-})
-
-app.listen(PORT, ()=>{
-    console.log("Server is running on port 5000");
-})
+// Start Server
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
