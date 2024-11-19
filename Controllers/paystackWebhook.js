@@ -2,7 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
 
-const PAYSTACK_SECRET = process.env.SECRET_KEY;
+const PAYSTACK_SECRET = process.env.API_SECRET;
 
 router.post('/webhook', (req, res) => {
     // Validate event using raw body and signature
