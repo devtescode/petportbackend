@@ -29,16 +29,23 @@ app.use('/useranimalinvest', userRoutes);
 
 // Middleware for Paystack webhook
 app.use(
-    '/api/paystack/webhook',
-    express.raw({ type: '*/*' }), // Parse raw data
-    (req, res, next) => {
-        req.rawBody = req.body; // Assign raw body
-        next();
-    }
+  '/api/paystack/webhook',
+  express.raw({ type: '*/*' }), // Capture raw body for webhook
+  (req, res, next) => {
+      req.rawBody = req.body; // Assign raw body to req.rawBody
+      next(); // Continue processing the request
+  }
 );
 
-// Paystack Webhook Route
+// Paystack route
 app.use('/api/paystack', paystackroute);
+
+
+// app.use('/api/paystack/webhook', express.raw({ type: '*/*' })); // Capture raw body
+
+
+// Paystack Webhook Route
+// app.use('/api/paystack', paystackroute);
 
 // Default Route
 app.get('/', (req, res) => {
