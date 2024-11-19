@@ -1,11 +1,11 @@
 const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
-const PaymentD= require('../Models/webhookModel')
+const {PaymentDB}= require('../Models/webhookModel')
 require('dotenv').config();
 
 const PAYSTACK_SECRET = process.env.API_SECRET;
-console.log('Paystack Secret:', PAYSTACK_SECRET);  // Log to check if it's loaded properly
+// console.log('Paystack Secret:', PAYSTACK_SECRET);  
 
 router.post('/webhook', async (req, res) => {
     try {
@@ -37,8 +37,8 @@ router.post('/webhook', async (req, res) => {
                 const reference = event.data.reference;
                 const currency = event.data.currency || 'NGN';  // Default currency to NGN
 
-                // Save payment data to MongoDB
-                const payment = new Payment({
+                
+                const paymentsaved = new PaymentDB({
                     event: event.event,
                     customerEmail: email,
                     amount: amount / 100,  // Convert to full currency (e.g., Naira)
@@ -51,8 +51,8 @@ router.post('/webhook', async (req, res) => {
                     channel
                 });
 
-                await payment.save();  // Save the data into the database
-                console.log('Payment data saved to database:', payment);
+                await paymentsaved.save();  // Save the data into the database
+                console.log('Payment data saved to database:', paymentsaved);
             }
 
             return res.status(200).json({ message: 'Webhook processed successfully' });
