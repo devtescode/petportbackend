@@ -15,7 +15,7 @@ router.post('/webhook', (req, res) => {
     }
 
     const hash = crypto.createHmac('sha512', PAYSTACK_SECRET).update(rawBody).digest('hex');
-
+    
     if (hash === signature) {
         // Signature is valid
         const event = JSON.parse(rawBody); // Parse raw body as JSON
