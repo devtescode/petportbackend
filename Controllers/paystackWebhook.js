@@ -10,6 +10,7 @@ router.post('/webhook', (req, res) => {
     const signature = req.headers['x-paystack-signature']; // Paystack's signature header
 
     if (!signature || !rawBody) {
+        console.log("Bad Request: Missing raw body or signature")
         return res.status(400).send('Bad Request: Missing raw body or signature');
     }
 

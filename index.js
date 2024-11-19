@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
-const env = require ('dotenv').config()
+require ('dotenv').config()
 const PORT = process.env.PORT || 5000
 const URI = process.env.URI
 const userRoutes = require("./Routes/user.routes")
@@ -42,9 +42,8 @@ app.use('/api/paystack', paystackroute);
 // Use Paystack webhook route
 // app.use('/api/paystack', paystackroute);
 
-// app.use("/api/paystack", paystackroute);
-// app.use
-// app.use('/admin', adminRoutes);
+
+
 app.get("", (req,res)=>{
     res.status(200).json({message:"Welcome to Animal"})
 })
