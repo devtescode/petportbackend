@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
-    event: { type: Object, required: true },
+    event: { type: String, required: true },
     customerEmail: { type: String, required: true },
     amount: { type: Number, required: true },
     currency: { type: String, required: true, default: 'NGN' },  // Default value for currency
