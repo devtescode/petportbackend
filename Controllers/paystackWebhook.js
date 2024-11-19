@@ -1,13 +1,13 @@
 const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
-const paymentDB= require('../Models/webhookModel')
+const PaymentD= require('../Models/webhookModel')
 require('dotenv').config();
 
 const PAYSTACK_SECRET = process.env.API_SECRET;
 console.log('Paystack Secret:', PAYSTACK_SECRET);  // Log to check if it's loaded properly
 
-router.post('/webhook', (req, res) => {
+router.post('/webhook', async (req, res) => {
     try {
         const rawBody = req.rawBody; // Get the raw body
         const signature = req.headers['x-paystack-signature']; // Paystack's signature header
@@ -33,13 +33,26 @@ router.post('/webhook', (req, res) => {
 
             // Handle specific Paystack events
             if (event.event === 'charge.success') {
-                const email = event.data.customer.email;
-                const amount = event.data.amount / 100; // Convert kobo to naira
-                console.log(`Payment successful for ${email}, Amount: ₦${amount}`);
-                // Add your business logic here (e.g., update user data)
+                const { email, amount, status, paidAt, authorization_code, channel } = event.data.customer;
+                const reference = event.data.reference;
+                const currency = event.data.currency || 'NGN';  // Default currency to NGN
 
-                const savePayment= new paymentDB ({event: event})
-                savePayment.save()
+                // Save payment data to MongoDB
+                const payment = new Payment({
+                    event: event.event,
+                    customerEmail: email,
+                    amount: amount / 100,  // Convert to full currency (e.g., Naira)
+                    currency,
+                    reference,
+                    status,
+                    paidAt: new Date(paidAt),
+                    authorizationCode: authorization_code,
+                    paymentMethod: 'Paystack',
+                    channel
+                });
+
+                await payment.save();  // Save the data into the database
+                console.log('Payment data saved to database:', payment);
             }
 
             return res.status(200).json({ message: 'Webhook processed successfully' });
