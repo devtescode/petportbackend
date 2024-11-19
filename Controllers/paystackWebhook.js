@@ -104,40 +104,27 @@ router.post('/webhook', async (req, res) => {
             const event = JSON.parse(rawBodyString); // Parse raw body as JSON
             console.log('Valid webhook event received:', event);
 
-            // Check if the event is 'charge.success'
+            // Handle specific Paystack events
             if (event.event === 'charge.success') {
-                const { email, amount, status, paidAt, authorization_code, channel } = event.data.customer;
-                const reference = event.data.reference;
-                const currency = event.data.currency || 'NGN';  // Default currency to NGN
+                const { email } = event.data.customer; // Customer email
+                const { amount, status, paidAt, authorization_code, channel, reference, currency } = event.data; // Correct data path
 
-                // Validate amount
-                if (isNaN(amount)) {
-                    console.error('Invalid amount:', amount);
-                    return res.status(400).json({ error: 'Invalid amount' });
+                if (amount === undefined) {
+                    console.error('Amount is undefined!');
+                    return res.status(400).json({ error: 'Amount is missing in webhook data' });
                 }
 
-                // Validate paidAt (ensure it's a valid date)
-                const paidAtDate = new Date(paidAt);
-                if (isNaN(paidAtDate.getTime())) {
-                    console.error('Invalid paidAt:', paidAt);
-                    return res.status(400).json({ error: 'Invalid paidAt date' });
-                }
+                // Convert amount to full currency (e.g., Naira)
+                const amountInFullCurrency = amount / 100; // Assuming amount is in kobo for NGN
 
-                // Check for missing required fields
-                if (!status || !authorization_code || !channel) {
-                    console.error('Missing required fields: status, authorization_code, or channel');
-                    return res.status(400).json({ error: 'Missing required fields' });
-                }
-
-                // Save to the database
                 const paymentsaved = new PaymentDB({
                     event: event.event,
                     customerEmail: email,
-                    amount: amount / 100,  // Convert to full currency (e.g., Naira)
-                    currency,
+                    amount: amountInFullCurrency,
+                    currency: currency || 'NGN',  // Default to 'NGN' if not provided
                     reference,
                     status,
-                    paidAt: paidAtDate,
+                    paidAt: new Date(paidAt),
                     authorizationCode: authorization_code,
                     paymentMethod: 'Paystack',
                     channel
@@ -157,5 +144,6 @@ router.post('/webhook', async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 module.exports = router;
