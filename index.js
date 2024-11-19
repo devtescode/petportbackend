@@ -32,6 +32,7 @@ app.use('/api/paystack',
   express.raw({ type: '*/*' }),  // Capture raw body for webhook
   (req, res, next) => {
       req.rawBody = req.body;  // Assign raw body to req.rawBody
+      console.log('Captured Raw Body:', req.rawBody.toString('utf8')); // Log raw body to debug
       next();  // Continue processing the request
   },
   paystackroute  // Add the Paystack webhook handler route

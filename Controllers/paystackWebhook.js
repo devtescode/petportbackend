@@ -4,6 +4,7 @@ const router = express.Router();
 require('dotenv').config();
 
 const PAYSTACK_SECRET = process.env.API_SECRET;
+console.log('Paystack Secret:', PAYSTACK_SECRET);  // Log to check if it's loaded correctly
 
 router.post('/webhook', (req, res) => {
     try {
@@ -22,6 +23,7 @@ router.post('/webhook', (req, res) => {
         const hash = crypto.createHmac('sha512', PAYSTACK_SECRET).update(rawBodyString).digest('hex');
         console.log('Calculated Hash:', hash);
         console.log('Paystack Signature:', signature);
+        console.log('Content-Type:', req.headers['content-type']);
 
         if (hash === signature) {
             // Signature is valid
