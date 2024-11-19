@@ -1,15 +1,13 @@
 const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
-require('dotenv').config(); // Load .env variables
+require('dotenv').config();
 
-// Load Paystack secret key
-const PAYSTACK_SECRET = process.env.API_SECRET;
+const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET;
 
 router.post('/webhook', (req, res) => {
     try {
-        // Validate event using raw body and signature
-        const rawBody = req.rawBody; // Captured by middleware in index.js
+        const rawBody = req.rawBody; // Captured by middleware
         const signature = req.headers['x-paystack-signature']; // Paystack's signature header
 
         if (!signature || !rawBody) {
@@ -17,32 +15,27 @@ router.post('/webhook', (req, res) => {
             return res.status(400).json({ error: 'Missing raw body or signature' });
         }
 
-        // Compute the HMAC hash using Paystack secret
-        const hash = crypto.createHmac('sha512', PAYSTACK_SECRET).update(rawBody).digest('hex');
+        const rawBodyString = rawBody.toString('utf8'); // Convert buffer to string
+
+        // Validate the signature with HMAC-SHA512
+        const hash = crypto.createHmac('sha512', PAYSTACK_SECRET).update(rawBodyString).digest('hex');
 
         if (hash === signature) {
             // Signature is valid
-            const event = JSON.parse(rawBody.toString('utf8')); // Parse raw body as JSON
+            const event = JSON.parse(rawBodyString); // Parse raw body as JSON
             console.log('Valid webhook event received:', event);
 
             // Handle specific Paystack events
-            switch (event.event) {
-                case 'charge.success':
-                    const email = event.data.customer.email;
-                    const amount = event.data.amount / 100; // Convert kobo to naira
-                    console.log(`Payment successful for ${email}, Amount: ₦${amount}`);
-                    // Add your business logic here, e.g., update the database
-                    break;
-
-                // Add handlers for other Paystack events as needed
-                default:
-                    console.log(`Unhandled event type: ${event.event}`);
+            if (event.event === 'charge.success') {
+                const email = event.data.customer.email;
+                const amount = event.data.amount / 100; // Convert kobo to naira
+                console.log(`Payment successful for ${email}, Amount: ₦${amount}`);
+                // Add your business logic here (e.g., update user data)
             }
 
             return res.status(200).json({ message: 'Webhook processed successfully' });
         } else {
-            // Signature does not match
-            console.error('Invalid signature detected');
+            console.error('Invalid signature');
             return res.status(403).json({ error: 'Invalid signature' });
         }
     } catch (error) {

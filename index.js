@@ -28,17 +28,17 @@ mongoose
 app.use('/useranimalinvest', userRoutes);
 
 // Middleware for Paystack webhook
-app.use(
-  '/api/paystack',
-  express.raw({ type: '*/*' }), // Capture raw body for webhook
+app.use('/api/paystack', 
+  express.raw({ type: '*/*' }),  // Capture raw body for webhook
   (req, res, next) => {
-      req.rawBody = req.body; // Assign raw body to req.rawBody
-      next(); // Continue processing the request
-  }
+      req.rawBody = req.body;  // Assign raw body to req.rawBody
+      next();  // Continue processing the request
+  },
+  paystackroute  // Add the Paystack webhook handler route
 );
 
 // Paystack route
-app.use('/api/paystack', paystackroute);
+// app.use('/api/paystack', paystackroute);
 
 
 // app.use('/api/paystack/webhook', express.raw({ type: '*/*' })); // Capture raw body
