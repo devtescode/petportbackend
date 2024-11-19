@@ -107,20 +107,23 @@ router.post('/webhook', async (req, res) => {
             // Handle specific Paystack events
             if (event.event === 'charge.success') {
                 const { email } = event.data.customer; // Customer email
-                const { amount, status, paidAt, authorization_code, channel, reference, currency } = event.data; // Correct data path
+                const { amount, status, paidAt, authorization_code, channel, reference, currency } = event.data;
 
                 if (amount === undefined) {
                     console.error('Amount is undefined!');
                     return res.status(400).json({ error: 'Amount is missing in webhook data' });
                 }
 
-                // Convert amount to full currency (e.g., Naira)
-                const amountInFullCurrency = amount / 100; // Assuming amount is in kobo for NGN
+                if (!authorization_code) {
+                    console.error('Authorization code is missing!');
+                    return res.status(400).json({ error: 'Authorization code is missing in webhook data' });
+                }
 
+                // Save the payment details to the database
                 const paymentsaved = new PaymentDB({
                     event: event.event,
                     customerEmail: email,
-                    amount: amountInFullCurrency,
+                    amount: amount / 100,  // Convert to full currency (e.g., Naira)
                     currency: currency || 'NGN',  // Default to 'NGN' if not provided
                     reference,
                     status,
@@ -144,6 +147,7 @@ router.post('/webhook', async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 
 module.exports = router;
