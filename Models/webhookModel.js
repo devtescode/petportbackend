@@ -14,4 +14,4 @@ const paymentSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const webhook = mongoose.model('Payment', paymentSchema);
-module.exports= webhook
+module.exports = webhook
