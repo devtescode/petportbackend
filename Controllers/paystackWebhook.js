@@ -7,7 +7,7 @@ const PAYSTACK_SECRET = process.env.API_SECRET;
 
 router.post('/webhook', (req, res) => {
     try {
-        const rawBody = req.rawBody; // Captured by middleware
+        const rawBody = req.rawBody; // Get the raw body
         const signature = req.headers['x-paystack-signature']; // Paystack's signature header
 
         if (!signature || !rawBody) {
@@ -16,10 +16,12 @@ router.post('/webhook', (req, res) => {
         }
 
         const rawBodyString = rawBody.toString('utf8'); // Convert buffer to string
-      
+        console.log('Raw Body:', rawBodyString);
 
         // Validate the signature with HMAC-SHA512
         const hash = crypto.createHmac('sha512', PAYSTACK_SECRET).update(rawBodyString).digest('hex');
+        console.log('Calculated Hash:', hash);
+        console.log('Paystack Signature:', signature);
 
         if (hash === signature) {
             // Signature is valid
@@ -44,5 +46,6 @@ router.post('/webhook', (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 module.exports = router;
