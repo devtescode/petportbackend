@@ -1,6 +1,10 @@
 const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
+require('dotenv').config(); // Load .env variables
+const express = require('express');
+const app = express();
+
 
 const PAYSTACK_SECRET = process.env.API_SECRET;
 
