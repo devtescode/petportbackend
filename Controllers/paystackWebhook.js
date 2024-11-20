@@ -106,37 +106,39 @@ router.post('/webhook', async (req, res) => {
 
             // Handle specific Paystack events
             if (event.event === 'charge.success') {
-                const { email } = event.data.customer; // Customer email
-                const { amount, status, paidAt, authorization_code, channel, reference, currency } = event.data;
-
-                if (amount === undefined) {
+                const { email } = event.data.customer || {}; // Safely access customer email
+                const { amount, status, paidAt, authorization_code, channel, reference, currency } = event.data || {}; // Safely access properties
+            
+                if (!amount) {
                     console.error('Amount is undefined!');
                     return res.status(400).json({ error: 'Amount is missing in webhook data' });
                 }
-
+            
+                // Log if authorization_code is missing
                 if (!authorization_code) {
-                    console.error('Authorization code is missing!');
-                    return res.status(400).json({ error: 'Authorization code is missing in webhook data' });
+                    console.warn('Authorization code is missing for this transaction.');
                 }
-
-                // Save the payment details to the database
+            
+                // Convert amount to full currency (e.g., Naira)
+                const amountInFullCurrency = amount / 100; // Assuming amount is in kobo for NGN
+            
                 const paymentsaved = new PaymentDB({
                     event: event.event,
-                    customerEmail: email,
-                    amount: amount / 100,  // Convert to full currency (e.g., Naira)
-                    currency: currency || 'NGN',  // Default to 'NGN' if not provided
-                    reference,
-                    status,
-                    paidAt: new Date(paidAt),
-                    authorizationCode: authorization_code,
+                    customerEmail: email || 'Unknown Email',
+                    amount: amountInFullCurrency,
+                    currency: currency || 'NGN', // Default to 'NGN' if not provided
+                    reference: reference || 'No Reference',
+                    status: status || 'unknown',
+                    paidAt: paidAt ? new Date(paidAt) : new Date(), // Default to now if missing
+                    authorizationCode: authorization_code || 'N/A',
                     paymentMethod: 'Paystack',
-                    channel
+                    channel: channel || 'unknown'
                 });
-
-                await paymentsaved.save();  // Save the data into the database
+            
+                await paymentsaved.save(); // Save the data into the database
                 console.log('Payment data saved to database:', paymentsaved);
             }
-
+            
             return res.status(200).json({ message: 'Webhook processed successfully' });
         } else {
             console.error('Invalid signature');
@@ -147,7 +149,6 @@ router.post('/webhook', async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
-
 
 
 module.exports = router;
