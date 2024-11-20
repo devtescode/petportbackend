@@ -144,7 +144,7 @@ router.post('/webhook', async (req, res) => {
                 
                 if (user){
                     // const newbalance = Number(user.Balance)+ amount
-                    user.Balance +=amount
+                    user.Balance +=amountInFullCurrency
                     await user.save(); 
                     console.log('User balance updated successfully:', user);
                 }
