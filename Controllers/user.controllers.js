@@ -13,7 +13,7 @@ const bcrypt = require("bcryptjs")
 const { v4: uuidv4 } = require('uuid');
 const mongoose = require("mongoose")
 const cron = require('node-cron');
-
+const paymentTable = require('../Models/webhookModel')
 env.config()
 
 var transporter = nodemailer.createTransport({
@@ -852,24 +852,40 @@ module.exports.fundaccount = async (req, res) => {
 
 
 
-module.exports.getBalance = async (req, res) => {
-    const { email } = req.params; // Extract email from URL
+// module.exports.getBalance = async (req, res) => {
+//     const { email } = req.params; // Extract email from URL
 
-    try {
-        const user = await Userschema.findOne({ Email: email });
-        // console.log("my user balance", user.Balance);
+//     try {
+//         const user = await Userschema.findOne({ Email: email });
+//         // console.log("my user balance", user.Balance);
         
+//         if (!user) {
+//             return res.status(404).json({ message: 'User not found' });
+//         }
+
+//         // Send user's balance in the response
+//         res.status(200).json({ Balance: user.Balance });
+//         console.log(user.Balance);
+        
+//     } catch (error) {
+//         console.error('Error fetching user balance:', error);
+//         res.status(500).json({ message: 'Server error' });
+//     }
+// };
+
+module.exports.userBalanceWallet= async (req, res) => {
+    try {
+        const { email } = req.params;
+        console.log(email, "payer")
+        const user = await Userschema.findOne({ Email:email });
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ error: 'User not found' });
         }
 
-        // Send user's balance in the response
-        res.status(200).json({ Balance: user.Balance });
-        console.log(user.Balance);
-        
+        res.status(200).json({ walletBalance: user.Balance });
     } catch (error) {
-        console.error('Error fetching user balance:', error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Error fetching wallet balance:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
     }
 };
 

@@ -73,6 +73,8 @@ const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
 const { PaymentDB } = require('../Models/webhookModel');
+const { Userschema } = require('../Models/user.models');
+const { log } = require('console');
 require('dotenv').config();
 
 const PAYSTACK_SECRET = process.env.API_SECRET;
@@ -136,6 +138,16 @@ router.post('/webhook', async (req, res) => {
                 });
             
                 await paymentsaved.save(); // Save the data into the database
+
+                
+                const user = await Userschema.findOne({Email:email})
+                
+                if (user){
+                    // const newbalance = Number(user.Balance)+ amount
+                    user.Balance +=amount
+                    await user.save(); 
+                    console.log('User balance updated successfully:', user);
+                }
                 console.log('Payment data saved to database:', paymentsaved);
             }
             
@@ -149,6 +161,11 @@ router.post('/webhook', async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+
+
+
+
 
 
 module.exports = router;

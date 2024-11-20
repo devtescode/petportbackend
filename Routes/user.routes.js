@@ -1,5 +1,5 @@
 const express = require('express');
-const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, getHistory, investperform, Adminlogin, Admindb, getall, putall, postall, delecteach, getuseranimalinvest, totalbalance, totalAmountInvested, Totalinvest, changePasswordAdmin, createplan, getuserplans, adminplansdelect, updateplan, getplan, planinvestnow, adnotification, getusernotification, fetchUsersNotifications, likeplan, addcomment, getcomments, getAllNotifications, deleteNotification, getusernotificationcount, testdashboard, deletecomment, getuserallcomments, getallinvest, addupaccount,  getBalance,} = require('../Controllers/user.controllers');
+const { userWelcome, signUp, signIn, dashBoard, product, productid, investnow, changepassword, profile, emailpage, forgetpassword, fundaccount, getHistory, investperform, Adminlogin, Admindb, getall, putall, postall, delecteach, getuseranimalinvest, totalbalance, totalAmountInvested, Totalinvest, changePasswordAdmin, createplan, getuserplans, adminplansdelect, updateplan, getplan, planinvestnow, adnotification, getusernotification, fetchUsersNotifications, likeplan, addcomment, getcomments, getAllNotifications, deleteNotification, getusernotificationcount, testdashboard, deletecomment, getuserallcomments, getallinvest, addupaccount,  getBalance, userBalanceWallet,} = require('../Controllers/user.controllers');
 // const {paystackWebhook} = require('../Controllers/paystackWebhook')
 const router = express.Router()
 
@@ -50,5 +50,6 @@ router.get("/getuserallcomments", getuserallcomments)
 router.get("/getallinvest", getallinvest)
 router.post("/addupaccount", addupaccount)
 // router.post('/paystack-webhook', paystackWebhook)
-router.get("/balance/:email", getBalance);
+// router.get("/balance/:email", getBalance);
+router.post("/userBalance/:email", userBalanceWallet);
 module.exports = router
