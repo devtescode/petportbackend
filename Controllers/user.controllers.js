@@ -890,85 +890,6 @@ module.exports.userBalanceWallet= async (req, res) => {
 };
 
 
-// module.exports.fundaccount = async (req, res) => {
-//     const { email, amount } = req.body;
-
-//     // Input validation
-//     if (!email || !amount || isNaN(amount)) {
-//         return res.status(400).send({ status: false, message: 'Invalid input data' });
-//     }
-
-//     try {
-//         const user = await Userschema.findOne({ Email: email });
-
-//         if (!user) {
-//             return res.status(404).send({ status: false, message: 'User not found' });
-//         }
-//         console.log(`Funding account for user: ${user.Fullname}`);
-
-//         // Optional: Limit the number of active virtual accounts per user (e.g., 10)
-//         const activeVAcount = user.virtualAccounts.filter(va => va.isActive);
-//         if (activeVAcount.length >= 10) {
-//             return res.status(400).send({ status: false, message: 'Maximum number of active virtual accounts reached. Please use an existing active account or wait until one expires.' });
-//         }
-
-//         // Create a Dedicated Account via Paystack
-//         const response = await axios.post(
-//             'https://api.paystack.co/dedicated_account',
-//             {
-//                 customer: user.paystackCustomerId, // Use the correct customer ID from your database
-//                 preferred_bank: 'titan-paystack', // Use the bank name you prefer
-//             },
-//             {
-//                 headers: {
-//                     Authorization: `Bearer ${process.env.API_SECRET}`, // Use your Paystack secret key
-//                     'Content-Type': 'application/json',
-//                 },
-//             }
-//         );
-
-//         // Log the Paystack response for debugging
-//         console.log('Paystack Response:', response.data);
-
-//         if (response.data.status) {
-//             const dedicatedAccount = response.data.data;
-
-//             // Save virtual account details to the user
-//             user.virtualAccounts.push({
-//                 accountNumber: dedicatedAccount.account_number,
-//                 accountBank: dedicatedAccount.account_bank,
-//                 accountName: dedicatedAccount.account_name,
-//                 // Optionally store any other details you want
-//                 isActive: true, // Mark the account as active
-//             });
-//             await user.save();
-
-//             // Respond with the virtual account details
-//             res.send({
-//                 status: true,
-//                 message: 'Dedicated account created successfully',
-//                 virtualAccount: {
-//                     account_number: dedicatedAccount.account_number,
-//                     account_bank: dedicatedAccount.account_bank,
-//                     account_name: dedicatedAccount.account_name,
-//                     createdAt: dedicatedAccount.createdAt,
-//                     // Add any other relevant details here
-//                 },
-//             });
-//             console.log("Dedicated account created successfully");
-//             console.log(`Account Number: ${dedicatedAccount.account_number}`);
-//             console.log(`Bank: ${dedicatedAccount.account_bank}`);
-//             console.log(`Account Name: ${dedicatedAccount.account_name}`);
-//         } else {
-//             res.status(400).send({ status: false, message: 'Dedicated account creation failed', error: response.data.message });
-//             console.log("Dedicated account creation failed: ", response.data.message);
-//         }
-//     } catch (error) {
-//         console.error('Error creating dedicated account', error.response ? error.response.data : error.message);
-//         res.status(500).send({ status: false, message: 'Internal server error' });
-//     }
-// };
-
 
 
 module.exports.getHistory = async (req, res) => {
@@ -1427,21 +1348,47 @@ module.exports.planinvestnow = async (req, res) => {
         // Deduct the selected investment amount from the user’s balance
         user.Balance -= investmentPrice;
 
-        // Update the user's history and investments with the selected investment details
+        // Calculate the earnings based on the investment period
+        let percentageIncrease = 0;
+        let months = 0;
+
+        if (investmentPeriod.includes('3-month')) {
+            percentageIncrease = 10;
+            months = 3;
+        } else if (investmentPeriod.includes('6-month')) {
+            percentageIncrease = 20;
+            months = 6;
+        } else if (investmentPeriod.includes('9-month')) {
+            percentageIncrease = 30;
+            months = 9;
+        }
+
+        const earnings = (investmentPrice * percentageIncrease) / 100 + investmentPrice;
+
+        // Calculate the end date
+        const startDate = new Date();
+        const endDate = new Date(startDate);
+        endDate.setMonth(startDate.getMonth() + months);
+
+        // Update the user's history and investments
         user.history.push({
             productId: planId,
             productName: plan.name,
-            productPrice: investmentPrice, // Log the actual investment price
+            productPrice: investmentPrice,
             productImage: productImage,
             investmentPeriod: investmentPeriod,
-            investmentPrice: investmentPrice
+            investmentPrice: investmentPrice,
+            expectedEarnings: earnings,
+            endDate: endDate.toISOString()
         });
 
         user.investments.push({
             planId,
-            investmentDate: new Date(),
+            investmentDate: startDate,
             investmentPeriod: investmentPeriod,
-            investmentPrice: investmentPrice
+            investmentPrice: investmentPrice,
+            expectedEarnings: earnings,
+            endDate: endDate
         });
 
         await user.save();
@@ -1483,9 +1430,10 @@ module.exports.planinvestnow = async (req, res) => {
                                 <ul style="color: #555555;">
                                     <li><strong>Plan ID:</strong> ${plan._id}</li>
                                     <li><strong>Plan Name:</strong> ${plan.name}</li>
-                                    <li><strong>Plan Price:</strong> ₦${investmentPrice}</li>
-                                    <li><strong>Investment Period:</strong> ${investmentPeriod}</li> 
-                                    <li><strong>Amount To Earn:</strong> ${investmentPrice}</li> 
+                                    <li><strong>Investment Price:</strong> ₦${investmentPrice}</li>
+                                    <li><strong>Investment Period:</strong> ${investmentPeriod}</li>
+                                    <li><strong>Expected Earnings:</strong> ₦${earnings}</li>
+                                    <li><strong>End Date:</strong> ${endDate.toDateString()}</li>
                                 </ul>
                                 <img src="${plan.image}" alt="${plan.name}" style="width: 100%; max-width: 200px; display: block; margin: 20px auto;">
                                 <p style="color: #555555;">Thank you for your patronage!</p>
@@ -1511,7 +1459,7 @@ module.exports.planinvestnow = async (req, res) => {
         console.log('Email sent: ' + info.response);
         res.json({
             success: true,
-            message: 'Investment successfully',
+            message: 'Investment successful!',
             userData: userData
         });
 
@@ -1519,7 +1467,8 @@ module.exports.planinvestnow = async (req, res) => {
         console.error('Error during investment:', error);
         res.status(500).json({ success: false, message: 'Server error' });
     }
-}
+};
+
 
 
 
@@ -1775,44 +1724,6 @@ module.exports.getallinvest = async (req, res) => {
 
 };
 
-// module.exports.addupaccount = async (req, res) => {
-//     try {
-//         const { data } = await axios.get(`https://api.paystack.co/bank/resolve?account_number=${req.body.AccountNumber}&bank_code=${req.body.Bankcode}&currency=NGN`, {
-//             headers: {
-//                 Authorization: `Bearer ${process.env.API_SECRET}`
-//             }
-//         });
-
-
-//         jwt.verify(req.body.token, secret, ((err, result) => {
-//             // console.log(result);
-
-//             if (err) {
-//                 res.send({ status: false, message: "wrong token" })
-//                 console.log(err);
-//             }
-//             else {
-//                 Userschema.findOneAndUpdate({ _id: result.id }, { $set: { Account: req.body.AccountNumber, AccountName: data.data.account_name, bank: req.body.bank } })
-//                     .then((user) => {
-//                         res.send({ status: true, message: "Correct Account", accountName: data.data.account_name })
-//                         console.log("user successfully added");
-//                         // console.log(user);
-
-
-//                     })
-//                     .catch((err) => {
-//                         console.log("Error Occured", err);
-//                     })
-//             }
-//         }))
-//     } catch (err) {
-//         console.error("Error occurred", err.message);
-//         res.status(500).json({ status: false, error: "Internal Server Error" });
-//     }
-// }
-
-
-
 
 module.exports.addupaccount = async (req, res) => {
     const { AccountNumber, Bankcode, bank, token } = req.body;
@@ -1895,43 +1806,70 @@ module.exports.addupaccount = async (req, res) => {
     }
 }
 
+module.exports.getPayoutDetails = async (req, res) => {
+    const { email } = req.query;
 
-// module.exports.addupaccount = async (req, res) => {
-//     try {
-//         const { data } = await axios.get(`https://api.paystack.co/bank/resolve?account_number=${req.body.AccountNumber}&bank_code=${req.body.Bankcode}&currency=NGN`, {
-//             headers: {
-//                 Authorization: `Bearer ${process.env.API_SECRET}`
-//             }
-//         });
+    try {
+        // Fetch user by email
+        const user = await Userschema.findOne({ Email: email });
 
-//         console.log("Paystack Response:", data); // Log Paystack response
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
 
-//         jwt.verify(req.body.token, secret, (err, result) => {
-//             if (err) {
-//                 console.log("Token Error:", err);
-//                 res.send({ status: false, message: "wrong token" });
-//             } else {
-//                 Userschema.findOneAndUpdate({ _id: result.id }, { 
-//                     $set: { 
-//                         Account: req.body.AccountNumber, 
-//                         AccountName: data.data.account_name, 
-//                         bank: req.body.bank 
-//                     } 
-//                 })
-//                 .then((user) => {
-//                     res.send({ status: true, message: "Correct Account", accountName: data.data.account_name });
-//                     console.log("User successfully added", user);
-//                 })
-//                 .catch((err) => {
-//                     console.log("Database Update Error", err);
-//                     res.status(500).send({ status: false, message: "Database error" });
-//                 });
-//             }
-//         });
-//     } catch (err) {
-//         console.error("Error occurred", err.message);
-//         res.status(500).json({ status: false, error: "Internal Server Error." });
-//     }
-// };
+        // Process user investments and calculate payouts
+        const payouts = user.investments.map((investment) => {
+            const startDate = investment.investmentDate || new Date();
+            let durationInMonths = 0;
+
+            // Handle missing or invalid investmentPeriod
+            if (investment.investmentPeriod === '3-month') {
+                durationInMonths = 3;
+            } else if (investment.investmentPeriod === '6-month') {
+                durationInMonths = 6;
+            } else if (investment.investmentPeriod === '9-month') {
+                durationInMonths = 9;
+            } else {
+                console.warn(`Invalid or missing investmentPeriod for Plan ID: ${investment.planId}`);
+                // Return a default payout if the period is invalid or missing
+                return {
+                    planId: investment.planId || 'N/A',
+                    investmentPeriod: 'N/A',
+                    investmentPrice: investment.investmentPrice || 'N/A',
+                    expectedEarnings: 'N/A',
+                    endDate: 'N/A',
+                };
+            }
+
+            // Calculate end date based on the start date and duration
+            const endDate = new Date(startDate);
+            endDate.setMonth(endDate.getMonth() + durationInMonths);
+
+            // Calculate expected earnings (10% per month)
+            const expectedEarnings =
+                durationInMonths > 0
+                    ? investment.investmentPrice + (investment.investmentPrice * 0.1 * durationInMonths)
+                    : 0;
+
+            return {
+                planId: investment.planId || 'N/A',
+                investmentPeriod: investment.investmentPeriod,
+                investmentPrice: investment.investmentPrice || 'N/A',
+                expectedEarnings: expectedEarnings > 0 ? Math.round(expectedEarnings) : 'N/A',
+                endDate: durationInMonths > 0 ? endDate.toISOString() : 'N/A',
+            };
+        });
+
+        // Send the response back to the client
+        res.json({
+            success: true,
+            message: 'Payout details fetched successfully',
+            payouts,
+        });
+    } catch (error) {
+        console.error('Error fetching payout details:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
 
 
