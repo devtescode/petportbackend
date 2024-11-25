@@ -1428,7 +1428,6 @@ module.exports.planinvestnow = async (req, res) => {
                                 <p style="color: #555555;">Hello ${user.Fullname},</p>
                                 <p style="color: #555555;">Your investment in the following plan was successful:</p>
                                 <ul style="color: #555555;">
-                                    <li><strong>Plan ID:</strong> ${plan._id}</li>
                                     <li><strong>Plan Name:</strong> ${plan.name}</li>
                                     <li><strong>Investment Price:</strong> ₦${investmentPrice}</li>
                                     <li><strong>Investment Period:</strong> ${investmentPeriod}</li>
@@ -1807,69 +1806,26 @@ module.exports.addupaccount = async (req, res) => {
 }
 
 module.exports.getPayoutDetails = async (req, res) => {
-    const { email } = req.query;
+    const { email } = req.query; // Assuming email is passed as a query parameter
 
     try {
-        // Fetch user by email
         const user = await Userschema.findOne({ Email: email });
-
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // Process user investments and calculate payouts
-        const payouts = user.investments.map((investment) => {
-            const startDate = investment.investmentDate || new Date();
-            let durationInMonths = 0;
+        // Fetch investment history or active investments
+        const investments = user.history; // Adjust field based on your schema
+        if (!investments || investments.length === 0) {
+            return res.status(200).json({ success: true, message: 'No investments found', investments: [] });
+        }
 
-            // Handle missing or invalid investmentPeriod
-            if (investment.investmentPeriod === '3-month') {
-                durationInMonths = 3;
-            } else if (investment.investmentPeriod === '6-month') {
-                durationInMonths = 6;
-            } else if (investment.investmentPeriod === '9-month') {
-                durationInMonths = 9;
-            } else {
-                console.warn(`Invalid or missing investmentPeriod for Plan ID: ${investment.planId}`);
-                // Return a default payout if the period is invalid or missing
-                return {
-                    planId: investment.planId || 'N/A',
-                    investmentPeriod: 'N/A',
-                    investmentPrice: investment.investmentPrice || 'N/A',
-                    expectedEarnings: 'N/A',
-                    endDate: 'N/A',
-                };
-            }
-
-            // Calculate end date based on the start date and duration
-            const endDate = new Date(startDate);
-            endDate.setMonth(endDate.getMonth() + durationInMonths);
-
-            // Calculate expected earnings (10% per month)
-            const expectedEarnings =
-                durationInMonths > 0
-                    ? investment.investmentPrice + (investment.investmentPrice * 0.1 * durationInMonths)
-                    : 0;
-
-            return {
-                planId: investment.planId || 'N/A',
-                investmentPeriod: investment.investmentPeriod,
-                investmentPrice: investment.investmentPrice || 'N/A',
-                expectedEarnings: expectedEarnings > 0 ? Math.round(expectedEarnings) : 'N/A',
-                endDate: durationInMonths > 0 ? endDate.toISOString() : 'N/A',
-            };
-        });
-
-        // Send the response back to the client
-        res.json({
-            success: true,
-            message: 'Payout details fetched successfully',
-            payouts,
-        });
+        res.json({ success: true, investments });
     } catch (error) {
         console.error('Error fetching payout details:', error);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
 
 

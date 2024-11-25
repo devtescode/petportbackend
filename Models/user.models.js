@@ -11,10 +11,23 @@ const investmentSchema = new mongoose.Schema({
   productImage: { type: String, required: false },
   investmentPeriod: { type: String, required: false },  // Add this line
   investmentPrice: { type: String, required: false },  // Add this line
-  cashOutPercentage: {
+  expectedEarnings: { 
     type: Number,
-    default: 0
-  }
+    default: function () {
+      // Example calculation: 20% return on investmentPrice
+      return (parseFloat(this.investmentPrice || this.productPrice) * 1.2) || 0;
+    },
+  },
+  endDate: {
+    type: Date,
+    default: function () {
+      // Calculate end date by adding the investment period to the investment date
+      const months = parseInt(this.investmentPeriod, 10) || 0;
+      const date = new Date(this.investmentDate);
+      date.setMonth(date.getMonth() + months);
+      return date;
+    },
+  },
 });
 
 const PlanSchema = new mongoose.Schema({
