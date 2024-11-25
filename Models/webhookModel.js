@@ -11,6 +11,7 @@ const paymentSchema = new mongoose.Schema({
     authorizationCode: { type: String, required: true },
     paymentMethod: { type: String, required: true },
     channel: { type: String, required: true },
+    transactionDate: { type: Date, default: Date.now },
 }, { timestamps: true });
 
 // Optional: Index for performance on frequently queried fields

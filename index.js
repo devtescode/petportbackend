@@ -4,6 +4,7 @@ require('dotenv').config();
 const cors = require('cors');
 const userRoutes = require('./Routes/user.routes');
 const paystackroute = require('./Controllers/paystackWebhook');
+// const transactionRouter = require("./Controllers/transaction")
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,7 +27,7 @@ mongoose
 
 // Routes
 app.use('/useranimalinvest', userRoutes);
-
+// app.use('/apihistory', transactionRouter)
 // Middleware for Paystack webhook
 app.use('/api/paystack', 
   express.raw({ type: '*/*' }),  // Capture raw body for webhook

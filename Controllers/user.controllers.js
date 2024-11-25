@@ -143,7 +143,7 @@ module.exports.signIn = (req, res) => {
                 console.log("Incorrect Password");
             }
             else {
-                let token = jwt.sign({ id: user.id }, secret, { expiresIn: "24h" })
+                let token = jwt.sign({ id: user.id, email: user.Email }, secret, { expiresIn: "24h" })
                 const userData = {
                     userId: user.id,
                     fullName: user.Fullname,
@@ -713,50 +713,6 @@ module.exports.forgetpassword = async (req, res) => {
         })
 }
 
-// module.exports.fundaccount = async (req, res) => {
-//     console.log(req.body);
-//     const { email, amount } = req.body;
-//     try {
-//         const user = await Userschema.findOne({ Email: email });
-
-//         if (!user) {
-//             return res.status(404).send('User not found');
-//         }
-//         console.log(user.Fullname);
-
-//         const response = await axios.post('https://api.payvessel.com/api/external/request/customerReservedAccount/', {
-
-//             "email": `${email}`,
-//             "name": `${user.Fullname}`,
-//             "phoneNumber": `0${user.Number}`,
-//             // "phoneNumber": "08064864821",
-//             "bankcode": ["120001"],
-//             "account_type": "DYNAMIC",
-//             "businessid": "B1CB53D683864E2B86A8B1FBCEA113A4",
-//         }, {
-//             headers: {
-//                 'api-key': `${PAYVESSEL_API_KEY}`,
-//                 'api-secret': `Bearer ${PAYVESSEL_API_SECRET}`,
-//                 'Content-Type': 'application/json'
-//             }
-//         });
-//         if (response.data.status === 'success') {
-//             user.Balance += amount;
-//             await user.save();
-//             res.send({ status: true, message: 'Account funded successfully', balance: user.Balance });
-//             console.log("account successfully");
-//         } else {
-//             res.status(400).send('Funding failed');
-//             console.log("fail");
-//         }
-//     } catch (error) {
-//         console.error('Error funding account', error.response.data);
-//         res.status(500).send('Internal server error');
-//     }
-// }
-
-
-
 module.exports.fundaccount = async (req, res) => {
     const { email, amount } = req.body;
     try {
@@ -788,7 +744,7 @@ module.exports.fundaccount = async (req, res) => {
                 message: 'Account funding success',
                 authorization_url: response.data.data.authorization_url // This URL will take the user to Paystack for payment
             });
-            // console.log("Accout",response.data.data.reference);
+           
             
             console.log("link response successfully sent");
         } else {
@@ -876,7 +832,7 @@ module.exports.fundaccount = async (req, res) => {
 module.exports.userBalanceWallet= async (req, res) => {
     try {
         const { email } = req.params;
-        console.log(email, "payer")
+        // console.log(email, "payer")
         const user = await Userschema.findOne({ Email:email });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -1827,5 +1783,23 @@ module.exports.getPayoutDetails = async (req, res) => {
     }
 };
 
+module.exports.getTransactionHistory = async (req, res) => {
+    const { email } = req.body;  // You can send email in the request body or get from JWT token
+    console.log(req.body.email)
+    try {
+        const transactions = await paymentTable.PaymentDB.find({ customerEmail: email });  // Use the model directly here
+        console.log(transactions);
+        
+
+        if (transactions.length === 0) {
+            return res.status(404).send({ message: 'No transactions found for this user.' });
+        }
+
+        return res.status(200).send(transactions);
+    } catch (error) {
+        console.error('Error fetching transactions:', error.message);
+        return res.status(500).send({ message: 'Internal server error' });
+    }
+};
 
 
